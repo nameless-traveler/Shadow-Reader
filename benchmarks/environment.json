@@ -1,0 +1,51 @@
+{
+  "report_title": "Shadow Reader Performance Benchmark",
+  "release": "Shadow Reader 1.0.0",
+  "test_date": "2026-10-27",
+  "os": "Debian GNU/Linux 13 (trixie), containerized Linux x86_64",
+  "kernel": "6.18.55",
+  "cpu": "AMD EPYC 9V74 virtual CPU; 5 vCPUs available to test process",
+  "memory_visible_to_test_container": "5.8 GiB",
+  "swap": "0 B",
+  "python": "3.13.5",
+  "node": "v22.16.0",
+  "chromium": "144.0.7559.96 (Debian 13 build)",
+  "playwright_python": "1.57.0",
+  "poppler_pdftotext": "25.06.0",
+  "viewport_css_pixels": "1366x768",
+  "browser_mode": "Headless Chromium",
+  "memory_metric": "Linux proportional set size (PSS) summed across the Chromium browser process and its child processes; RSS is also retained in raw data. PSS is a process-tree estimate, not a measurement of Firefox on the target laptop.",
+  "source_documents": [
+    {
+      "name": "Shadow Slave Volume 7",
+      "input": "pdftotext -enc UTF-8 -layout output",
+      "paragraphs_reported_by_reader": 20692
+    },
+    {
+      "name": "Synthetic long novel",
+      "input": "Generated test text",
+      "paragraphs_reported_by_reader": 30061
+    },
+    {
+      "name": "Synthetic touchpad stress novel",
+      "input": "Generated test text",
+      "paragraphs": 8000
+    }
+  ],
+  "candidate_index_sha256_before_branding_only": "582fb75293e097ce3a34d502ce34e29903e55cd7acbb1501650e64820c6d4364",
+  "pre_virtualized_index_sha256": "caa004943ebadedf3b94f813cd31b24f2de906604f0e43f08d41fcf6896b921d",
+  "pre_scroll_fix_index_sha256": "8445b703cb80d027c53320ab6c4d481f258f394da231117509ad19fe85907dee",
+  "notes": [
+    "Test container is not the user's Intel i3/8 GB target system; no claim of target-machine FPS is made.",
+    "No headless requestAnimationFrame metric is marketed as physical-touchpad frame rate.",
+    "30,000 paragraphs at 4x CPU throttle did not complete within the automation time budget and is explicitly inconclusive."
+  ],
+  "candidate_index_sha256_final_branded": "83393a44773281a9163efd93d7dab9824142b6624d9afafb7db58529ae223763",
+  "candidate_server_sha256_final_branded": "adf8c0038257e558bd8023d4155ea997225622bcfa66747469a6f555da14d35a",
+  "benchmark_report_date": "2026-10-27",
+  "test_notes": [
+    "The release branding changes the visible product name to Shadow Reader. Existing localStorage keys were deliberately retained so existing reading progress and preferences remain discoverable.",
+    "The final regression run passed parser, resume/progress, Focus Here, server API, virtualization browser smoke, touchpad scroll, Focus Here browser, and resume browser checks. One earlier combined shell command timed out at its final browser test; that same resume browser test was rerun individually and passed.",
+    "Headless Chromium results are not equivalent to physical touchpad or native Firefox GUI measurements. No FPS uplift is claimed."
+  ]
+}

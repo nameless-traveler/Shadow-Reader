@@ -1,0 +1,18 @@
+# Python/Playwright development artifacts
+__pycache__/
+*.py[cod]
+.venv/
+playwright-report/
+test-results/
+benchmark-output/
+*.trace.zip
+
+# Python caches and local environments
+*$py.class
+venv/
+
+# OS/editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

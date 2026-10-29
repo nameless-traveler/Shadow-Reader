@@ -1,0 +1,2272 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="application-name" content="Shadow Reader">
+  <title>Shadow Reader — local novel reader</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111315;
+      --surface: #191c20;
+      --surface-2: #202429;
+      --border: #2b3036;
+      --text: #d8d9d6;
+      --muted: #9299a1;
+      --heading: #f0efeb;
+      --accent: #c6b18a;
+      --accent-ink: #1d1a14;
+      --reader-width: 760px;
+      --reader-size: 19px;
+      --reader-line: 1.88;
+      --paragraph-gap: 1.18em;
+      --reader-font: Georgia, "Liberation Serif", "DejaVu Serif", serif;
+      --ui-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --shadow: 0 18px 48px rgba(0, 0, 0, .12);
+    }
+    html[data-theme="sepia"] {
+      color-scheme: light;
+      --bg: #eee3cf;
+      --surface: #f4ead9;
+      --surface-2: #e8dac2;
+      --border: #d7c5a9;
+      --text: #4a3d2f;
+      --muted: #897765;
+      --heading: #34281f;
+      --accent: #8f6840;
+      --accent-ink: #fffaf2;
+      --shadow: 0 18px 48px rgba(75, 54, 28, .08);
+    }
+    html[data-theme="paper"] {
+      color-scheme: light;
+      --bg: #f4f2ed;
+      --surface: #fbfaf7;
+      --surface-2: #ece9e2;
+      --border: #dedbd2;
+      --text: #30322f;
+      --muted: #777b77;
+      --heading: #222522;
+      --accent: #536f6a;
+      --accent-ink: #ffffff;
+      --shadow: 0 18px 48px rgba(35, 40, 36, .06);
+    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; scroll-behavior: smooth; background: var(--bg); }
+    html.instant-scroll { scroll-behavior: auto !important; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--ui-font); transition: background .18s ease, color .18s ease; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .topline { height: 3px; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 18%, transparent) 75%, transparent); }
+    .shell { max-width: 1120px; margin: 0 auto; padding: 30px 26px 60px; }
+    .masthead { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom: 42px; }
+    .brand { display:flex; align-items:center; gap:12px; min-width:0; }
+    .brand-mark { display:grid; place-items:center; width:38px; height:38px; flex:none; color:var(--accent); border:1px solid var(--border); border-radius:50%; background:var(--surface); font-size:20px; }
+    .brand-name { color:var(--heading); font-family:var(--reader-font); font-size:18px; letter-spacing:.015em; }
+    .brand-sub { color:var(--muted); font-size:11px; letter-spacing:.13em; text-transform:uppercase; margin-top:3px; }
+    .privacy { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.11em; white-space:nowrap; }
+    .privacy-dot { width:7px; height:7px; border-radius:50%; background:#7eab85; box-shadow:0 0 0 4px color-mix(in srgb, #7eab85 13%, transparent); }
+    .intro { text-align:center; max-width:690px; margin:0 auto 29px; }
+    .eyebrow { font-size:11px; line-height:1.4; color:var(--accent); text-transform:uppercase; letter-spacing:.18em; margin-bottom:14px; }
+    h1 { margin:0; color:var(--heading); font-family:var(--reader-font); font-weight:400; font-size:clamp(31px, 4vw, 43px); line-height:1.2; letter-spacing:-.035em; }
+    .intro p { max-width:520px; color:var(--muted); font-size:14px; line-height:1.8; margin:14px auto 0; }
+    .workspace { max-width:990px; margin:0 auto; }
+    .filebar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:15px 17px; background:var(--surface); border:1px solid var(--border); border-radius:14px 14px 0 0; }
+    .file-info { min-width:0; display:flex; align-items:center; gap:12px; }
+    .file-icon { width:37px; height:42px; border:1px solid var(--border); border-radius:7px; display:grid; place-items:center; color:var(--accent); background:var(--surface-2); flex:none; }
+    .file-name { color:var(--heading); font-size:13px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .file-meta { color:var(--muted); font-size:11px; margin-top:4px; }
+    .file-actions { display:flex; align-items:center; gap:8px; flex:none; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 13px; border:1px solid var(--border); background:var(--surface-2); color:var(--text); border-radius:9px; font-size:12px; font-weight:600; transition:background .15s ease, border-color .15s ease, transform .15s ease; }
+    .btn:hover { border-color:color-mix(in srgb, var(--accent) 55%, var(--border)); }
+    .btn:active { transform:translateY(1px); }
+    .btn-primary { color:var(--accent-ink); background:var(--accent); border-color:var(--accent); }
+    .btn-primary:hover { filter:brightness(1.05); border-color:var(--accent); }
+    .btn-quiet { background:transparent; }
+    .settings { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); background:var(--surface); border:1px solid var(--border); border-top:0; border-radius:0 0 14px 14px; overflow:hidden; }
+    .setting { padding:14px 16px 16px; min-width:0; }
+    .setting + .setting { border-left:1px solid var(--border); }
+    .setting-label { display:block; color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.13em; margin:0 0 11px; }
+    .segmented { display:flex; align-items:center; flex-wrap:wrap; gap:4px; }
+    .seg { border:1px solid transparent; border-radius:6px; background:transparent; color:var(--muted); padding:7px 8px; font-size:11px; line-height:1.1; }
+    .seg:hover { color:var(--text); background:var(--surface-2); }
+    .seg.active { color:var(--heading); background:var(--surface-2); border-color:var(--border); box-shadow:inset 0 1px 0 rgba(255,255,255,.025); }
+    .seg[data-size="small"] { font-size:10px; }
+    .seg[data-size="medium"] { font-size:12px; }
+    .seg[data-size="large"] { font-size:14px; }
+    .theme-buttons .seg { padding:7px; }
+    .status { min-height:27px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 4px 7px; color:var(--muted); font-size:11px; }
+    .status strong { color:var(--text); font-weight:500; }
+    .progress-wrap { width:100%; height:2px; background:var(--border); margin:0 0 36px; overflow:hidden; border-radius:99px; }
+    .progress { width:0; height:100%; background:var(--accent); transition:width .12s linear; }
+    .progress-toast { position:fixed; right:22px; bottom:22px; z-index:30; max-width:min(300px, calc(100vw - 32px)); padding:11px 15px; border:1px solid var(--border); border-radius:11px; background:var(--surface); color:var(--text); box-shadow:0 8px 28px rgba(0,0,0,.22); font-size:12px; opacity:0; transform:translateY(7px); pointer-events:none; transition:opacity .22s ease, transform .22s ease; }
+    .progress-toast.show { opacity:1; transform:translateY(0); }
+    .progress-toast strong { color:var(--heading); font-weight:600; }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior:auto !important; }
+      .progress-toast, .progress, .focus-here-control, .focus-here-tooltip { transition:none !important; }
+    }
+    .reader { max-width:var(--reader-width); margin:0 auto; min-height:270px; }
+    .reader-title { color:var(--muted); font-family:var(--reader-font); font-size:13px; letter-spacing:.04em; text-align:center; margin:0 auto 19px; }
+    .reader h2 { max-width:var(--reader-width); color:var(--heading); font-family:var(--reader-font); font-size:clamp(23px, 3vw, 30px); font-weight:400; line-height:1.35; text-align:center; letter-spacing:-.02em; margin:0 auto 40px; }
+    .prose { color:var(--text); font-family:var(--reader-font); font-size:var(--reader-size); line-height:var(--reader-line); letter-spacing:.003em; overflow-wrap:anywhere; hyphens:auto; }
+    /* Virtual spacers change height as paragraph estimates improve. Disable browser
+       scroll anchoring here: native anchoring can fight touchpad input during window swaps. */
+    .prose.virtualized-reader { overflow-anchor:none; }
+    .prose p { margin:0 0 var(--paragraph-gap); text-wrap:pretty; }
+    .prose p.dialogue { margin-bottom:calc(var(--paragraph-gap) * 1.12); }
+    .prose p:last-child { margin-bottom:0; }
+    /* Virtualized normal-mode reading keeps only a nearby paragraph window in the DOM. */
+    .virtual-spacer { display:block !important; width:100%; margin:0 !important; padding:0 !important; border:0 !important; pointer-events:none; }
+    .virtual-window { display:flex; flex-direction:column; align-items:stretch; }
+    .virtual-window > p { flex:none; }
+    .virtual-window > p:last-child:not(.virtual-final-item) { margin-bottom:var(--paragraph-gap) !important; }
+    .virtual-window > p.dialogue:last-child:not(.virtual-final-item) { margin-bottom:calc(var(--paragraph-gap) * 1.12) !important; }
+    .virtual-window > p.virtual-final-item { margin-bottom:0 !important; }
+    .virtual-window > section { flex:none; }
+    .prose .scene-break { list-style:none; text-align:center; color:var(--muted); letter-spacing:.42em; padding:.3em 0 1em; }
+    .empty-state { max-width:620px; margin:36px auto 0; border:1px dashed var(--border); border-radius:14px; padding:34px 24px; text-align:center; color:var(--muted); }
+    .empty-symbol { color:var(--accent); font-family:var(--reader-font); font-size:30px; margin-bottom:13px; }
+    .empty-state h2 { color:var(--heading); font-family:var(--reader-font); font-weight:400; font-size:23px; margin:0 0 10px; }
+    .empty-state p { max-width:400px; margin:0 auto; font-size:13px; line-height:1.8; }
+    .empty-state .btn { margin-top:19px; }
+    .message { display:none; margin:15px auto 0; max-width:760px; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:10px; padding:13px 15px; font-size:12px; line-height:1.7; }
+    .message.show { display:block; }
+    .message.error { border-color:#714b4b; }
+    .message a { color:var(--accent); }
+    .reader-footer { max-width:var(--reader-width); margin:54px auto 0; padding-top:18px; border-top:1px solid var(--border); display:flex; justify-content:space-between; gap:14px; color:var(--muted); font-size:10px; letter-spacing:.04em; }
+    .focus-here-control { position:fixed; z-index:18; width:34px; height:34px; padding:0; display:grid; place-items:center; border:1px solid transparent; border-radius:10px; background:transparent; color:var(--muted); opacity:0; transform:translateY(3px); pointer-events:none; transition:opacity .16s ease, transform .16s ease, color .16s ease, background .16s ease, border-color .16s ease; }
+    .focus-here-control.is-visible, .focus-here-control:focus-visible { opacity:.84; transform:translateY(0); pointer-events:auto; }
+    .focus-here-control:hover, .focus-here-control:focus-visible { color:var(--accent); background:var(--surface); border-color:var(--border); opacity:1; outline:none; }
+    .focus-here-control svg { display:block; width:19px; height:19px; }
+    .focus-here-tooltip { position:absolute; left:calc(100% + 8px); right:auto; top:50%; transform:translate(-4px, -50%); width:max-content; max-width:var(--focus-tooltip-max-width, 150px); padding:7px 9px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); box-shadow:var(--shadow); font:500 11px/1.3 var(--ui-font); text-align:center; white-space:normal; overflow-wrap:anywhere; opacity:0; visibility:hidden; pointer-events:none; transition:opacity .14s ease, transform .14s ease, visibility .14s ease; }
+    .focus-here-control:hover .focus-here-tooltip, .focus-here-control:focus-visible .focus-here-tooltip { opacity:1; visibility:visible; transform:translate(0, -50%); }
+    .focus-mode .focus-here-control { display:none !important; }
+    @media (max-width:700px) { .focus-here-control { display:none; } }
+    .hidden { display:none !important; }
+    .chapter-opening { margin:4.4rem 0 3rem; padding:1.8rem 1.25rem 2rem; border-top:1px solid var(--border); border-bottom:1px solid var(--border); text-align:center; position:relative; scroll-margin-top:100px; }
+    .chapter-opening::before { content:"✧"; display:block; margin:-2.55rem auto 1rem; width:2.3rem; padding:.2rem 0; color:var(--accent); background:var(--bg); font-size:1.2rem; }
+    .chapter-kicker { color:var(--accent); font-family:var(--ui-font); font-size:10px; line-height:1.5; font-weight:700; text-transform:uppercase; letter-spacing:.2em; }
+    .chapter-opening-title { color:var(--heading); font-family:var(--reader-font); font-size:clamp(24px, 3vw, 32px); line-height:1.35; font-weight:500; letter-spacing:-.025em; margin:12px auto 0; max-width:760px; text-wrap:balance; }
+    .focus-toolbar { display:none; }
+    .focus-mode .masthead, .focus-mode .intro, .focus-mode .filebar, .focus-mode .settings, .focus-mode .status, .focus-mode .progress-wrap { display:none; }
+    .focus-mode .shell { max-width:1120px; padding-top:12px; }
+    .focus-mode .workspace { max-width:100%; }
+    .focus-mode .reader { max-width:var(--reader-width); }
+    .focus-mode .focus-toolbar { display:flex; position:sticky; top:0; z-index:15; width:100%; max-width:1000px; margin:0 auto 34px; padding:11px 0; align-items:center; gap:9px; background:color-mix(in srgb, var(--bg) 94%, transparent); border-bottom:1px solid var(--border); backdrop-filter:blur(12px); }
+    .focus-mode .focus-toolbar .btn { white-space:nowrap; }
+    .chapter-jump { display:flex; flex:1; min-width:120px; align-items:center; gap:9px; }
+    .chapter-jump label { flex:none; color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.1em; }
+    .chapter-select { min-width:0; width:100%; padding:10px 11px; border:1px solid var(--border); border-radius:9px; color:var(--text); background:var(--surface); font:500 12px var(--ui-font); }
+    .chapter-select::placeholder { color:var(--muted); opacity:.9; }
+    .chapter-select:focus-visible { outline:2px solid color-mix(in srgb, var(--accent) 65%, transparent); outline-offset:2px; }
+    .chapter-position { flex:none; color:var(--muted); font-size:10px; white-space:nowrap; }
+    .focus-mode .reader-title { margin-bottom:14px; color:var(--accent); font-family:var(--ui-font); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.19em; }
+    .focus-mode .reader h2 { margin-bottom:43px; font-size:clamp(27px, 3.5vw, 36px); }
+    .focus-mode .reader-footer { margin-top:65px; }
+    .focus-mode .message { display:none !important; }
+    .load-overlay { position:fixed; inset:0; display:none; place-items:center; background:rgba(8,9,10,.72); z-index:30; backdrop-filter:blur(7px); }
+    .load-overlay.show { display:grid; }
+    .load-card { width:min(90vw,330px); background:var(--surface); border:1px solid var(--border); border-radius:15px; padding:25px; text-align:center; box-shadow:var(--shadow); }
+    .spinner { width:24px; height:24px; margin:0 auto 14px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .load-card p { color:var(--muted); font-size:12px; line-height:1.6; margin:0; }
+    .load-card strong { display:block; color:var(--heading); font-size:13px; margin-bottom:6px; }
+    .resume-overlay { position:fixed; inset:0; z-index:40; display:none; place-items:center; padding:20px; background:rgba(8,9,10,.76); backdrop-filter:blur(8px); }
+    .resume-overlay.show { display:grid; }
+    .resume-card { width:min(100%, 440px); padding:27px; border:1px solid var(--border); border-radius:17px; background:var(--surface); box-shadow:var(--shadow); }
+    .resume-eyebrow { color:var(--accent); font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; margin:0 0 12px; }
+    .resume-card h2 { color:var(--heading); font:400 27px/1.25 var(--reader-font); margin:0 0 11px; overflow-wrap:anywhere; }
+    .resume-card p { color:var(--muted); font-size:13px; line-height:1.7; margin:0; }
+    .resume-document { color:var(--text) !important; font-weight:600; overflow-wrap:anywhere; margin-bottom:7px !important; }
+    .resume-actions { display:flex; gap:9px; margin-top:23px; }
+    .resume-actions .btn { min-height:42px; flex:1; }
+    .resume-note { margin-top:14px !important; font-size:11px !important; }
+    @media (max-width:520px) { .resume-card { padding:22px; } .resume-actions { flex-direction:column-reverse; } }
+    .book-search-overlay { position:fixed; inset:0; z-index:45; display:none; place-items:start center; padding:12vh 18px 20px; background:rgba(8,9,10,.55); backdrop-filter:blur(5px); }
+    .book-search-overlay.show { display:grid; }
+    .book-search-card { width:min(100%, 560px); padding:18px; border:1px solid var(--border); border-radius:14px; background:var(--surface); box-shadow:var(--shadow); }
+    .book-search-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .book-search-head label { color:var(--heading); font:400 20px/1.25 var(--reader-font); }
+    .book-search-input { width:100%; padding:12px 13px; border:1px solid var(--border); border-radius:9px; outline:none; background:var(--bg); color:var(--text); font-size:14px; }
+    .book-search-input:focus { border-color:var(--accent); box-shadow:0 0 0 2px color-mix(in srgb, var(--accent) 20%, transparent); }
+    .book-search-meta { min-height:24px; padding:9px 1px; color:var(--muted); font-size:11px; }
+    .book-search-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:7px; }
+    .search-result-active { outline:2px solid color-mix(in srgb, var(--accent) 80%, transparent); outline-offset:5px; border-radius:3px; background:color-mix(in srgb, var(--accent) 8%, transparent); }
+    @media (prefers-reduced-motion: reduce) { .book-search-overlay { backdrop-filter:none; } }
+    @media (max-width:800px) {
+      .shell { padding:22px 17px 42px; }
+      .masthead { margin-bottom:34px; }
+      .settings { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .setting:nth-child(3) { border-left:0; border-top:1px solid var(--border); }
+      .setting:nth-child(4) { border-top:1px solid var(--border); }
+      .reader { max-width:100%; }
+      .focus-mode .focus-toolbar { flex-wrap:wrap; gap:7px; }
+      .chapter-jump { order:-1; flex-basis:100%; }
+      .chapter-jump label { display:none; }
+      .focus-mode .focus-toolbar .btn { flex:1; padding:9px 8px; }
+      .chapter-position { font-size:9px; }
+    }
+    @media (max-width:520px) {
+      .shell { padding:17px 14px 32px; }
+      .masthead { margin-bottom:30px; }
+      .privacy { font-size:9px; letter-spacing:.06em; }
+      .brand-sub { font-size:9px; }
+      .filebar { align-items:flex-start; flex-direction:column; }
+      .file-actions { width:100%; }
+      .file-actions .btn { flex:1; }
+      .settings { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .setting { padding:13px 11px; }
+      .seg { padding:7px 7px; }
+      .prose { font-size:var(--reader-size); }
+      .reader h2 { margin-bottom:28px; }
+      .chapter-opening { margin:3.6rem 0 2.6rem; padding:1.5rem .4rem 1.65rem; }
+      .focus-mode .shell { padding:0 12px 32px; }
+      .focus-mode .focus-toolbar { margin-bottom:26px; padding:9px 0; }
+      .focus-mode .reader h2 { margin-bottom:32px; }
+    }
+    @media print {
+      :root { --bg:#fff; --text:#222; --heading:#111; --reader-width:100%; --reader-size:12pt; --reader-line:1.7; }
+      body, html { background:#fff !important; color:#222 !important; }
+      .topline, .masthead, .intro, .filebar, .settings, .status, .progress-wrap, .reader-footer, .focus-toolbar, .focus-here-control { display:none !important; }
+      .shell { padding:0; max-width:none; }
+      .reader { max-width:none; }
+      .prose { color:#222; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topline"></div>
+  <main class="shell" id="appShell">
+    <header class="masthead">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">☾</div>
+        <div><div class="brand-name">Shadow Reader</div><div class="brand-sub">A little room to read</div></div>
+      </div>
+      <div class="privacy"><span class="privacy-dot"></span> Local & private</div>
+    </header>
+
+    <section class="intro" id="intro">
+      <div class="eyebrow">Your reading space</div>
+      <h1>Settle into the story.</h1>
+      <p>A calm, reflowable reading view for your PDFs. Choose the text size, breathing room, and page width that feel right to you.</p>
+    </section>
+
+    <section class="workspace" aria-label="PDF reader controls">
+      <div class="filebar">
+        <div class="file-info">
+          <div class="file-icon" aria-hidden="true"><svg width="21" height="25" viewBox="0 0 21 25" fill="none"><path d="M3 1.5h9l6 6V22a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 2 22V3A1.5 1.5 0 0 1 3.5 1.5Z" stroke="currentColor" stroke-width="1.3"/><path d="M12 2v6h5.5M5.5 13h9M5.5 16.5h9M5.5 20h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+          <div style="min-width:0"><div class="file-name" id="fileName">No document open</div><div class="file-meta" id="fileMeta">Choose a text-based PDF or a .txt file</div></div>
+        </div>
+        <div class="file-actions">
+          <button class="btn btn-quiet" id="clearBtn" type="button" disabled>Clear</button>
+          <button class="btn btn-quiet" id="fileFocusBtn" type="button" disabled>Focus mode ↗</button>
+          <button class="btn btn-primary" id="openBtn" type="button"><span aria-hidden="true">＋</span> Open a PDF</button>
+          <input id="fileInput" class="hidden" type="file" accept=".pdf,application/pdf,.txt,text/plain">
+        </div>
+      </div>
+
+      <div class="settings" id="settingsPanel">
+        <div class="setting">
+          <span class="setting-label">Font size</span>
+          <div class="segmented" role="group" aria-label="Font size">
+            <button class="seg" data-group="font" data-value="small" data-size="small" type="button" aria-pressed="false">S</button>
+            <button class="seg active" data-group="font" data-value="medium" data-size="medium" type="button" aria-pressed="true">M</button>
+            <button class="seg" data-group="font" data-value="large" data-size="large" type="button" aria-pressed="false">L</button>
+          </div>
+        </div>
+        <div class="setting">
+          <span class="setting-label">Spacing</span>
+          <div class="segmented" role="group" aria-label="Paragraph spacing">
+            <button class="seg" data-group="spacing" data-value="tight" type="button" aria-pressed="false">Tight</button>
+            <button class="seg active" data-group="spacing" data-value="normal" type="button" aria-pressed="true">Normal</button>
+            <button class="seg" data-group="spacing" data-value="loose" type="button" aria-pressed="false">Loose</button>
+          </div>
+        </div>
+        <div class="setting">
+          <span class="setting-label">Reading width</span>
+          <div class="segmented" role="group" aria-label="Reading width">
+            <button class="seg" data-group="width" data-value="narrow" type="button" aria-pressed="false">Narrow</button>
+            <button class="seg active" data-group="width" data-value="medium" type="button" aria-pressed="true">Medium</button>
+            <button class="seg" data-group="width" data-value="wide" type="button" aria-pressed="false">Wide</button>
+          </div>
+        </div>
+        <div class="setting">
+          <span class="setting-label">Page tone</span>
+          <div class="segmented theme-buttons" role="group" aria-label="Page color theme">
+            <button class="seg active" data-group="theme" data-value="night" type="button" aria-pressed="true" title="Night theme">Night</button>
+            <button class="seg" data-group="theme" data-value="sepia" type="button" aria-pressed="false" title="Sepia theme">Sepia</button>
+            <button class="seg" data-group="theme" data-value="paper" type="button" aria-pressed="false" title="Paper theme">Paper</button>
+          </div>
+        </div>
+      </div>
+      <div class="status"><span id="statusText">Ready when you are.</span><span id="readProgress"></span></div>
+      <div class="progress-wrap" aria-hidden="true"><div class="progress" id="progressBar"></div></div>
+
+      <nav class="focus-toolbar" id="focusToolbar" aria-label="Focus mode chapter navigation">
+        <button class="btn" id="prevChapterBtn" type="button" disabled aria-label="Previous chapter">← Previous</button>
+        <div class="chapter-jump">
+          <label for="chapterSelect">Jump to</label>
+          <input class="chapter-select" id="chapterSelect" type="search" list="chapterOptions" aria-label="Jump to chapter by number or title" placeholder="Type a chapter number or title…" autocomplete="off" disabled>
+          <datalist id="chapterOptions"></datalist>
+          <span class="chapter-position" id="chapterPosition"></span>
+        </div>
+        <button class="btn" id="nextChapterBtn" type="button" disabled aria-label="Next chapter">Next →</button>
+        <button class="btn btn-quiet" id="exitFocus" type="button" aria-label="Exit focus mode">Exit focus · Esc</button>
+      </nav>
+
+      <div id="emptyState" class="empty-state">
+        <div class="empty-symbol" aria-hidden="true">✧</div>
+        <h2>Bring your next chapter</h2>
+        <p>Open a PDF and the text will flow into one comfortable reading column — no tiny page previews, no zooming in and out. Your file stays on this computer.</p>
+        <button class="btn btn-primary" id="emptyOpenBtn" type="button">Choose a document</button>
+      </div>
+      <div id="message" class="message" role="status" aria-live="polite"></div>
+
+      <article id="reader" class="reader hidden" aria-label="Reflowed document text">
+        <div class="reader-title" id="readerTitle"></div>
+        <h2 id="documentHeading"></h2>
+        <div class="prose" id="prose"></div>
+        <footer class="reader-footer"><span id="footerPages">Reflowed text</span><button class="btn btn-quiet" id="focusBtn" type="button">Focus mode ↗</button></footer>
+      </article>
+    </section>
+  </main>
+
+  <div class="load-overlay" id="loading" aria-live="polite" aria-busy="true">
+    <div class="load-card"><div class="spinner"></div><strong>Preparing your reading view</strong><p>Extracting text locally on this computer…</p></div>
+  </div>
+
+  <div class="progress-toast" id="progressToast" role="status" aria-live="polite"></div>
+
+  <button class="focus-here-control" id="focusHereButton" type="button" aria-label="Open this passage in Focus mode" tabindex="-1" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 7.2C9.7 5.7 6.6 5.25 3.5 5.5v13c3.2-.2 6.3.25 8.5 1.8" />
+      <path d="M12 7.2c2.3-1.5 5.4-1.95 8.5-1.7v13c-3.2-.2-6.3.25-8.5 1.8" />
+      <path d="M12 7.2v13.1" />
+    </svg>
+    <span class="focus-here-tooltip" role="tooltip">Open this passage in Focus mode</span>
+  </button>
+
+  <div class="book-search-overlay" id="bookSearchDialog" role="dialog" aria-modal="true" aria-labelledby="bookSearchTitle" aria-describedby="bookSearchMeta">
+    <div class="book-search-card">
+      <div class="book-search-head">
+        <label id="bookSearchTitle" for="bookSearchInput">Find in this book</label>
+        <button class="btn btn-quiet" id="closeBookSearch" type="button" aria-label="Close book search">Close · Esc</button>
+      </div>
+      <input class="book-search-input" id="bookSearchInput" type="search" autocomplete="off" placeholder="Search words or a phrase…" aria-label="Search the full book">
+      <div class="book-search-meta" id="bookSearchMeta" aria-live="polite">Searches the full text, including paragraphs not currently rendered.</div>
+      <div class="book-search-actions">
+        <button class="btn" id="previousSearchResult" type="button" disabled>Previous match</button>
+        <button class="btn btn-primary" id="nextSearchResult" type="button" disabled>Go to match ↵</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="resume-overlay" id="resumeDialog" role="dialog" aria-modal="true" aria-labelledby="resumeDialogTitle" aria-describedby="resumeDialogDetails">
+    <div class="resume-card">
+      <div class="resume-eyebrow">Saved reading position</div>
+      <h2 id="resumeDialogTitle">Welcome back.</h2>
+      <p class="resume-document" id="resumeDocumentName"></p>
+      <p id="resumeDialogDetails">You have a saved place in this book.</p>
+      <div class="resume-actions">
+        <button class="btn" id="startOverBtn" type="button">Start from the beginning</button>
+        <button class="btn btn-primary" id="resumeBtn" type="button">Continue reading</button>
+      </div>
+      <p class="resume-note">Your position is saved in this browser on this computer.</p>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const $ = (sel) => document.querySelector(sel);
+      const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+      const fileInput = $('#fileInput');
+      const openBtn = $('#openBtn');
+      const emptyOpenBtn = $('#emptyOpenBtn');
+      const clearBtn = $('#clearBtn');
+      const fileFocusBtn = $('#fileFocusBtn');
+      const focusHereButton = $('#focusHereButton');
+      const prevChapterBtn = $('#prevChapterBtn');
+      const nextChapterBtn = $('#nextChapterBtn');
+      const chapterSelect = $('#chapterSelect');
+      const chapterOptions = $('#chapterOptions');
+      const chapterPosition = $('#chapterPosition');
+      const fileNameEl = $('#fileName');
+      const fileMetaEl = $('#fileMeta');
+      const statusText = $('#statusText');
+      const readProgress = $('#readProgress');
+      const progressBar = $('#progressBar');
+      const progressToast = $('#progressToast');
+      const emptyState = $('#emptyState');
+      const reader = $('#reader');
+      const message = $('#message');
+      const loading = $('#loading');
+      const resumeDialog = $('#resumeDialog');
+      const resumeDocumentName = $('#resumeDocumentName');
+      const resumeDialogDetails = $('#resumeDialogDetails');
+      const resumeBtn = $('#resumeBtn');
+      const startOverBtn = $('#startOverBtn');
+      const prose = $('#prose');
+      const readerTitle = $('#readerTitle');
+      const documentHeading = $('#documentHeading');
+      const footerPages = $('#footerPages');
+      const bookSearchDialog = $('#bookSearchDialog');
+      const bookSearchInput = $('#bookSearchInput');
+      const bookSearchMeta = $('#bookSearchMeta');
+      const previousSearchResult = $('#previousSearchResult');
+      const nextSearchResult = $('#nextSearchResult');
+      const closeBookSearch = $('#closeBookSearch');
+      let searchResults = [];
+      let searchMatchCount = 0;
+      let searchResultCursor = -1;
+      let lastSearchQuery = '';
+      let activeSearchSourceIndex = null;
+      let openedFilename = '';
+      let documentFingerprint = '';
+      let pendingResumeState = null;
+      let saveProgressTimer = null;
+      let furthestReadPercent = 0;
+      let lastProgressMilestone = 0;
+      let progressToastTimer = null;
+      let focusHereHideTimer = null;
+      let focusTransitionInProgress = false;
+      let virtualScrollSettleUntil = 0;
+      let documentParagraphs = [];
+      let renderedReaderItems = [];
+      let sourceParagraphOffsets = [];
+      let totalSourceCharacters = 0;
+      const VIRTUALIZE_THRESHOLD = 1600;
+      const VIRTUAL_OVERSCAN_PX = 1800;
+      const VIRTUAL_MIN_WINDOW_ITEMS = 40;
+      let virtualReader = { active: false, items: [], heights: [], heightTree: [], totalHeight: 0, start: 0, end: 0, top: null, window: null, bottom: null, rendering: false, metricsVersion: 0 };
+      let chapters = [];
+      let currentChapterIndex = 0;
+      let hasDetectedChapters = false;
+      let settings = { font: 'medium', spacing: 'normal', width: 'medium', theme: 'night' };
+
+      try {
+        const saved = JSON.parse(localStorage.getItem('quietReaderPrefs') || '{}');
+        for (const key of Object.keys(settings)) if (saved[key] && isValidSetting(key, saved[key])) settings[key] = saved[key];
+      } catch (_) {}
+
+      function isValidSetting(group, value) {
+        const allowed = {
+          font: ['small','medium','large'], spacing: ['tight','normal','loose'],
+          width: ['narrow','medium','wide'], theme: ['night','sepia','paper']
+        };
+        return allowed[group] && allowed[group].includes(value);
+      }
+      function saveSettings() {
+        try { localStorage.setItem('quietReaderPrefs', JSON.stringify(settings)); } catch (_) {}
+      }
+      function applySettings() {
+        const root = document.documentElement;
+        root.dataset.theme = settings.theme;
+        const sizes = { small: '17px', medium: '19px', large: '22px' };
+        const lines = { tight: '1.62', normal: '1.88', loose: '2.08' };
+        const gaps = { tight: '.78em', normal: '1.18em', loose: '1.48em' };
+        const widths = { narrow: '620px', medium: '760px', wide: '920px' };
+        root.style.setProperty('--reader-size', sizes[settings.font]);
+        root.style.setProperty('--reader-line', lines[settings.spacing]);
+        root.style.setProperty('--paragraph-gap', gaps[settings.spacing]);
+        root.style.setProperty('--reader-width', widths[settings.width]);
+        $$('[data-group]').forEach((button) => {
+          const active = settings[button.dataset.group] === button.dataset.value;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        saveSettings();
+        if (virtualReader.active) requestAnimationFrame(() => resetVirtualReaderEstimates());
+      }
+      applySettings();
+
+      $$('[data-group]').forEach((button) => button.addEventListener('click', () => {
+        const group = button.dataset.group;
+        const value = button.dataset.value;
+        if (!isValidSetting(group, value)) return;
+        settings[group] = value;
+        applySettings();
+      }));
+
+      function showMessage(text, isError = false) {
+        message.textContent = text;
+        message.classList.toggle('error', isError);
+        message.classList.add('show');
+      }
+      function hideMessage() { message.classList.remove('show', 'error'); message.textContent = ''; }
+      function setBusy(busy) {
+        loading.classList.toggle('show', busy);
+        openBtn.disabled = busy;
+        emptyOpenBtn.disabled = busy;
+      }
+      function stripWatermarks(value) {
+        return String(value || '')
+          .replace(/\b(?:www\.)?OceanofPDF\.com\b/gi, '')
+          .replace(/\[\s*correct title\s*\]/gi, '')
+          .replace(/[ \t]{2,}/g, ' ')
+          .trim();
+      }
+      function tidyLineJoin(lines) {
+        const clean = lines.map(line => stripWatermarks(line).replace(/[\t ]+$/g, '').trim()).filter(Boolean);
+        let out = '';
+        for (let i = 0; i < clean.length; i++) {
+          const line = clean[i];
+          if (!out) { out = line; continue; }
+          if (/[\-\u2010\u2011]$/.test(out) && /^[a-z]/.test(line)) out = out.slice(0, -1) + line;
+          else out += ' ' + line;
+        }
+        return out.replace(/\s+/g, ' ').trim();
+      }
+      const CHAPTER_WORD_NUMBERS = '(?:zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?|thirty(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?|forty(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?|fifty(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?|sixty(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?|seventy(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?|eighty(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?|ninety(?:[- ](?:one|two|three|four|five|six|seven|eight|nine))?|first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth|thirteenth|fourteenth|fifteenth|sixteenth|seventeenth|eighteenth|nineteenth|twentieth|thirtieth|fortieth|fiftieth|sixtieth|seventieth|eightieth|ninetieth)';
+      const CHAPTER_NUMBER_TOKEN = '(?:\\d{1,5}|[ivxlcdm]{1,10}|' + CHAPTER_WORD_NUMBERS + ')';
+      const TITLE_SMALL_WORDS = new Set(['a','an','and','as','at','but','by','down','for','from','in','into','near','no','nor','not','of','off','on','onto','or','out','over','per','the','to','too','under','up','upon','via','with','within','without','is','was','were','be','been','being']);
+      function hasTitleCapitalization(value) {
+        const text = String(value || '').trim().replace(/^[\[({“‘"']+/, '');
+        const letters = text.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, '');
+        if (!letters) return false;
+        if (letters === letters.toLocaleUpperCase()) return true;
+        const words = text.match(/[A-Za-zÀ-ÖØ-öø-ÿ]+(?:['’][A-Za-zÀ-ÖØ-öø-ÿ]+)*/g) || [];
+        // Chapter titles may be title case or sentence case (e.g. "See no Evil").
+        // Requiring an uppercase first word catches ordinary lowercase continuations
+        // such as "I was thinking..." while supporting a wider range of book styles.
+        return Boolean(words.length && /^[A-ZÀ-ÖØ-Þ]/.test(words[0]));
+      }
+      function hasTitleCasePattern(value) {
+        const text = String(value || '').trim().replace(/^[\[({“‘"']+/, '');
+        const letters = text.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g, '');
+        if (!letters) return false;
+        if (letters === letters.toLocaleUpperCase()) return true;
+        const words = text.match(/[A-Za-zÀ-ÖØ-öø-ÿ]+(?:['’][A-Za-zÀ-ÖØ-öø-ÿ]+)*/g) || [];
+        if (!words.length || !/^[A-ZÀ-ÖØ-Þ]/.test(words[0])) return false;
+        return words.every((word, index) => index > 0 && TITLE_SMALL_WORDS.has(word.toLocaleLowerCase()) || /^[A-ZÀ-ÖØ-Þ]/.test(word) || word === word.toLocaleUpperCase());
+      }
+      function hasHeadingTitlePattern(value) {
+        if (hasTitleCasePattern(value)) return true;
+        const text = String(value || '').trim();
+        const words = text.match(/[A-Za-zÀ-ÖØ-öø-ÿ]+(?:['’][A-Za-zÀ-ÖØ-öø-ÿ]+)*/g) || [];
+        if (words.length < 3 || !/^[A-ZÀ-ÖØ-Þ]/.test(words[0])) return false;
+        // A few classic editions use sentence case but retain capital letters
+        // on significant words: "The strange Man's Arrival". Requiring at least
+        // half the words to start uppercase avoids treating normal sentences such
+        // as "That thing, meanwhile, was flooding the place" as Roman headings.
+        const capitalized = words.filter(word => /^[A-ZÀ-ÖØ-Þ]/.test(word)).length;
+        return capitalized >= Math.max(2, Math.ceil(words.length / 2));
+      }
+      function looksLikeStandaloneTitle(value) {
+        const text = stripWatermarks(value).replace(/\s+/g, ' ').trim();
+        if (!text || text.length > 100 || text.length < 2) return false;
+        if (/\.$/.test(text) || /[;:]$/.test(text)) return false;
+        if (!/[A-Za-zÀ-ÖØ-öø-ÿ]{2}/.test(text)) return false;
+        return hasHeadingTitlePattern(text) && !/[.!?…]{2,}/.test(text);
+      }
+      function prettifyChapterTitle(value) {
+        const text = String(value || '').trim();
+        if (!text || !/[A-Z]/.test(text) || text !== text.toLocaleUpperCase()) return text;
+        return text.toLocaleLowerCase().replace(/(^|[\s:;,\.\-\u2013\u2014(])([a-z])/g, (_, before, letter) => before + letter.toLocaleUpperCase());
+      }
+      function buildHeading(kind, number, title, originalTitle = '') {
+        const cleanTitle = String(title || '').trim().replace(/^[\s:;,\.\-\u2013\u2014]+/, '');
+        const titleForDisplay = cleanTitle ? prettifyChapterTitle(cleanTitle) : '';
+        const label = number ? kind + ' ' + number : String(originalTitle || cleanTitle || kind).trim();
+        return {
+          number: number || null,
+          kind,
+          label,
+          title: cleanTitle,
+          displayTitle: titleForDisplay || label,
+          selectorLabel: label + (titleForDisplay && number ? ' — ' + titleForDisplay : '')
+        };
+      }
+      function parseChapterHeading(paragraph) {
+        const text = stripWatermarks(paragraph).replace(/\s+/g, ' ').trim();
+        if (!text) return null;
+        const explicit = text.match(new RegExp('^(chapter|ch\\.?(?=\\s|#|\\d)|letter)\\s*(?:no\\.?\\s*)?#?\\s*(' + CHAPTER_NUMBER_TOKEN + ')(.*)$', 'i'));
+        if (explicit) {
+          const prefix = explicit[1].toLocaleLowerCase().replace(/\.$/, '');
+          const kind = prefix === 'letter' ? 'Letter' : 'Chapter';
+          const rawNumber = explicit[2].trim();
+          const number = /^\d+$/.test(rawNumber) ? rawNumber : (/^[ivxlcdm]+$/i.test(rawNumber) ? rawNumber.toLocaleUpperCase() : rawNumber.toLocaleLowerCase().replace(/\b[a-z]/g, ch => ch.toLocaleUpperCase()));
+          const tail = explicit[3] || '';
+          let title = '';
+          if (tail.trim()) {
+            const separator = tail.match(/^\s*[:.\-\u2013\u2014]\s*(.*)$/);
+            if (separator) title = separator[1].trim();
+            else if (/^\s+/.test(tail) && hasHeadingTitlePattern(tail.trim())) title = tail.trim();
+            else return null;
+          }
+          if (title.length > 140) return null;
+          return buildHeading(kind, number, title);
+        }
+
+        // Modern web novels sometimes print only the four- or five-digit chapter
+        // number, followed by a title (e.g. "1231 Once More, With Feeling").
+        const longNumbered = text.match(/^(\d{4,5})\s+(.{2,140})$/);
+        if (longNumbered && hasTitleCasePattern(longNumbered[2])) {
+          return buildHeading('Chapter', longNumbered[1], longNumbered[2]);
+        }
+
+        // Classic editions commonly use "1. The Title", "I. THE TITLE", or
+        // a Roman numeral alone on one line followed by the title on the next.
+        const shortNumeric = text.match(/^(\d{1,3})(\s*[.)]\s*|\s*[:\-\u2013\u2014]\s*|\s+)(.*)$/);
+        if (shortNumeric) {
+          const separator = shortNumeric[2];
+          const title = shortNumeric[3] || '';
+          const titleLooksValid = !title.trim()
+            || (title.trim().length <= 140 && (/^\s+$/.test(separator)
+              ? hasTitleCasePattern(title)
+              : hasHeadingTitlePattern(title)));
+          if (titleLooksValid) return buildHeading('Chapter', shortNumeric[1], title);
+        }
+        const roman = text.match(/^([IVXLCDM]{1,10})([.)])?(?:\s+(.+))?$/);
+        if (roman) {
+          const rawNumber = roman[1];
+          const title = String(roman[3] || '').trim();
+          const hasRomanPunctuation = Boolean(roman[2]);
+          if ((!title && roman[2] === '.') || (title && hasHeadingTitlePattern(title) && title.length <= 140)) {
+            return buildHeading('Chapter', rawNumber.toLocaleUpperCase(), title);
+          }
+        }
+        return null;
+      }
+      function isNumberedChapterHeadingLine(line) {
+        const parsed = parseChapterHeading(line);
+        return Boolean(parsed && parsed.number && !/^(?:chapter\b|ch\.?\b|letter\b)/i.test(String(line || '').trim()));
+      }
+      function isChapterHeadingLine(line) {
+        return Boolean(parseChapterHeading(String(line || '').trim()));
+      }
+      function parseSpecialSectionHeading(paragraph) {
+        const text = stripWatermarks(paragraph).replace(/[.\s]+$/g, '').trim();
+        const match = text.match(/^(prologue|epilogue|interlude|prelude|finale|coda|afterword|conclusion)(?:\s+([ivxlcdm]+|\d{1,3}))?$/i);
+        if (!match) return null;
+        const title = match[1].charAt(0).toLocaleUpperCase() + match[1].slice(1).toLocaleLowerCase() + (match[2] ? ' ' + match[2].toLocaleUpperCase() : '');
+        return buildHeading('Section', null, title, title);
+      }
+      function parseUnnumberedChapterCandidate(paragraph) {
+        const text = stripWatermarks(paragraph).replace(/\s+/g, ' ').trim();
+        if (text.length < 4 || text.length > 100) return null;
+        const noTerminalPunctuation = text.replace(/[.:]+$/g, '').trim();
+        if (/^(?:contents|table of contents|list of illustrations|illustrations|preface|foreword|dedication|acknowledg(?:e)?ments?|copyright|publisher(?:'s|’s) note|title page|the end|index|bibliography|appendix|advertisement|about the author)$/i.test(noTerminalPunctuation)) return null;
+        if (/^\d/.test(text) || text !== text.toLocaleUpperCase()) return null;
+        const letters = text.replace(/[^A-ZÀ-ÖØ-Þ]/g, '');
+        const words = text.match(/[A-ZÀ-ÖØ-Þ][A-ZÀ-ÖØ-Þ'’\-]*/g) || [];
+        if (letters.length < 4 || words.length < 2) return null;
+        // Only enabled as a book-wide fallback when numbered chapter headings are absent.
+        return buildHeading('Section', null, text, text);
+      }
+      function isContentsLabel(paragraph) {
+        return /^(?:(?:table|list)\s+of\s+)?contents\s*[:.]?$/i.test(stripWatermarks(paragraph));
+      }
+      function looksLikeBodyParagraph(paragraph) {
+        const text = String(paragraph || '').trim();
+        if (!text || parseChapterHeading(text) || parseSpecialSectionHeading(text) || parseUnnumberedChapterCandidate(text)) return false;
+        if (/^\d{1,4}$/.test(text)) return false;
+        return text.length >= 38 || (text.length >= 20 && /[.!?…][”’"')\]]?$/.test(text));
+      }
+      function hasBodyAfterHeading(paragraphs, index, heading) {
+        let cursor = index + 1;
+        if (cursor < paragraphs.length && !parseChapterHeading(paragraphs[cursor]) && looksLikeStandaloneTitle(paragraphs[cursor])) cursor++;
+        // Sometimes a section title spans a short line and the first prose paragraph
+        // begins after a brief epigraph; look through at most two short, non-heading lines.
+        for (let tries = 0; cursor < paragraphs.length && tries < 3; tries++, cursor++) {
+          if (parseChapterHeading(paragraphs[cursor]) || parseSpecialSectionHeading(paragraphs[cursor]) || parseUnnumberedChapterCandidate(paragraphs[cursor])) return false;
+          if (looksLikeBodyParagraph(paragraphs[cursor])) return true;
+          if (String(paragraphs[cursor] || '').length > 100) return true;
+        }
+        return false;
+      }
+      function headingSignature(heading) {
+        if (!heading) return '';
+        if (heading.number) return String(heading.kind || 'Chapter').toLocaleLowerCase() + ':' + String(heading.number).toLocaleLowerCase();
+        return String(heading.kind || 'Section').toLocaleLowerCase() + ':' + String(heading.title || heading.displayTitle || '').toLocaleLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      }
+      function findContentsSkipIndexes(paragraphs) {
+        const skip = new Set();
+        const parseAnyHeading = (value) => parseChapterHeading(value) || parseSpecialSectionHeading(value) || parseUnnumberedChapterCandidate(value);
+        for (let i = 0; i < paragraphs.length; i++) {
+          if (!isContentsLabel(paragraphs[i])) continue;
+          skip.add(i);
+          const seen = new Map();
+          const tocCandidates = [];
+          let actualStart = -1;
+          let firstBodyCandidate = -1;
+          for (let j = i + 1; j < paragraphs.length; j++) {
+            // A repeated heading signature is strong evidence that the book has
+            // moved from its contents list into the actual chapter text. Numeric
+            // chapters may omit the title in one location; their number is enough
+            // to match. Title-only chapter styles use the normalized title.
+            const candidate = parseAnyHeading(paragraphs[j]);
+            if (candidate) {
+              const signature = headingSignature(candidate);
+              if (signature && seen.has(signature)) {
+                actualStart = j;
+                break;
+              }
+              if (signature) seen.set(signature, j);
+              tocCandidates.push(j);
+              if (firstBodyCandidate < 0 && hasBodyAfterHeading(paragraphs, j, candidate)) firstBodyCandidate = j;
+              continue;
+            }
+            // If a long prose block appears after a candidate and there was no
+            // second copy to confirm the boundary, remember the candidate as a
+            // conservative fallback. Continue scanning briefly for a duplicate
+            // before committing, as the final TOC entry can also be followed by
+            // prose in a text extraction.
+            if (firstBodyCandidate >= 0 && j - firstBodyCandidate > 24) break;
+          }
+          if (actualStart < 0) actualStart = firstBodyCandidate;
+          const skipUntil = actualStart >= 0 ? actualStart : paragraphs.length;
+          for (const index of tocCandidates) if (index < skipUntil) skip.add(index);
+          if (actualStart >= 0) i = actualStart - 1;
+          else break;
+        }
+        return skip;
+      }
+      function extractParagraphs(raw) {
+        let text = String(raw || '').replace(/\u0000/g, '').replace(/\u00ad/g, '').replace(/\r\n?/g, '\n');
+        const pages = text.split('\f');
+        const result = [];
+
+        // Unlike stripWatermarks(), this version intentionally preserves leading spaces.
+        // Poppler's -layout output often marks the first line of a novel paragraph with
+        // indentation; trimming it before paragraph detection was flattening the book.
+        const keepLayout = (value) => String(value || '')
+          .replace(/\b(?:www\.)?OceanofPDF\.com\b/gi, '')
+          .replace(/[ \t]+$/g, '');
+        const indentWidth = (line) => ((String(line).match(/^[ \t]*/) || [''])[0]).replace(/\t/g, '    ').length;
+        const startsDialogue = (line) => /^[“‘"'«‹—–]/.test(String(line || '').trim());
+        const isStandaloneDialogue = (lines) => {
+          const joined = lines.map(line => String(line).trim()).filter(Boolean).join(' ');
+          return /^(?:[“‘"'«‹]).*[”’"'»›](?:[.!?…])?$/.test(joined);
+        };
+
+        for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+          let lines = pages[pageIndex].split('\n').map(keepLayout);
+          const nonblank = lines.map((line, index) => ({ line, index })).filter(x => x.line.trim());
+          // Page numbers commonly appear alone at the top or bottom of extracted PDF text.
+          if (nonblank.length > 1) {
+            const first = nonblank[0], last = nonblank[nonblank.length - 1];
+            if (/^\d{1,4}$/.test(first.line.trim()) && first.index < 3) lines[first.index] = '';
+            if (/^\d{1,4}$/.test(last.line.trim()) && last.index >= lines.length - 3) lines[last.index] = '';
+          }
+
+          const blocks = [];
+          let current = [];
+          const flush = () => {
+            if (current.some(line => line.trim())) blocks.push(current);
+            current = [];
+          };
+          for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            const rawLine = lines[lineIndex];
+            const clean = rawLine.trim();
+            if (!clean) { flush(); continue; }
+            // Chapter headings are their own block even if the source omitted blank lines.
+            if (isChapterHeadingLine(clean)) {
+              flush();
+              let headingLine = clean;
+
+              // Some editions put the chapter number and title on separate lines,
+              // e.g. "CHAPTER 1061:" followed by the centered, uppercase "DIRE STRAIT".
+              // Attach that standalone title to the heading so it is displayed in the
+              // chapter opener and jump menu, rather than being mistaken for prose.
+              let parsedHeading = parseChapterHeading(headingLine);
+              if (parsedHeading && !parsedHeading.title) {
+                let titleIndex = lineIndex + 1;
+                while (titleIndex < lines.length && !lines[titleIndex].trim()) titleIndex++;
+                if (titleIndex < lines.length) {
+                  const nextRawLine = lines[titleIndex];
+                  const nextClean = nextRawLine.trim().replace(/\s+/g, ' ');
+                  if (looksLikeStandaloneTitle(nextClean) && !isChapterHeadingLine(nextClean)) {
+                    headingLine += ' ' + nextClean;
+                    lineIndex = titleIndex;
+                    parsedHeading = parseChapterHeading(headingLine);
+                  }
+                }
+              }
+
+              // Titles can wrap after explicit CHAPTER headings, Roman-numeral
+              // headings, or long numbered web-novel headings. Join only lines
+              // with stronger indentation and no intervening blank line.
+              if (parsedHeading && parsedHeading.title) {
+                const baseIndent = indentWidth(rawLine);
+                while (lineIndex + 1 < lines.length) {
+                  const nextRawLine = lines[lineIndex + 1];
+                  const nextClean = nextRawLine.trim();
+                  if (!nextClean || isChapterHeadingLine(nextClean)) break;
+                  if (nextClean.length > 120) break;
+                  const sameOrLessIndent = indentWidth(nextRawLine) <= baseIndent;
+                  const titleSoFar = (parseChapterHeading(headingLine) || {}).title || '';
+                  // In many classic PDFs, titles are wrapped onto a second line with
+                  // no extra indentation (e.g. "A Caucus-Race and" / "a Long Tale").
+                  // Join a lowercase continuation or a word split by a trailing hyphen
+                  // only while there is no blank-line boundary. Ordinary prose after a
+                  // heading is usually separated by a blank line and is not consumed.
+                  const lowercaseTitleContinuation = /^[a-z]/.test(nextClean)
+                    && titleSoFar.length > 0
+                    && !/[.!?…]$/.test(titleSoFar);
+                  const hyphenatedTitleContinuation = /[-\u2010\u2011]$/.test(titleSoFar);
+                  if (sameOrLessIndent && !lowercaseTitleContinuation && !hyphenatedTitleContinuation) break;
+                  headingLine += hyphenatedTitleContinuation ? nextClean : ' ' + nextClean;
+                  lineIndex++;
+                }
+              }
+              blocks.push([headingLine]);
+              continue;
+            }
+            // Dialogue that starts on a new extracted line is a strong paragraph boundary.
+            // Also start narration in a fresh paragraph after a standalone spoken line.
+            if (current.length && (startsDialogue(clean) || isStandaloneDialogue(current))) flush();
+            current.push(rawLine);
+          }
+          flush();
+
+          const pageParagraphs = [];
+          for (const block of blocks) {
+            if (block.length === 1 && isChapterHeadingLine(block[0].trim())) {
+              pageParagraphs.push(stripWatermarks(block[0]).replace(/\s+/g, ' ').trim());
+              continue;
+            }
+
+            // Split paragraphs whose first line is indented in the PDF layout. Keep the
+            // physical wrap lines together; only a clear indentation increase is used.
+            const indents = block.map(indentWidth);
+            const minIndent = indents.length ? Math.min(...indents) : 0;
+            let sub = [];
+            for (let i = 0; i < block.length; i++) {
+              const line = block[i];
+              const startsIndentedParagraph = i > 0 && sub.length > 0 && indents[i] >= minIndent + 2;
+              if (startsIndentedParagraph) {
+                const paragraph = tidyLineJoin(sub);
+                if (paragraph) pageParagraphs.push(paragraph);
+                sub = [];
+              }
+              sub.push(line);
+            }
+            const paragraph = tidyLineJoin(sub);
+            if (paragraph) pageParagraphs.push(paragraph);
+          }
+
+          // Join only obvious continuations at page edges. Never join a new dialogue or
+          // chapter heading onto the preceding page's final paragraph.
+          if (result.length && pageParagraphs.length) {
+            const previous = result[result.length - 1];
+            const next = pageParagraphs[0];
+            if (parseChapterHeading(next) || parseChapterHeading(previous) || startsDialogue(next) || isStandaloneDialogue([previous])) {
+              // Keep the natural paragraph boundary.
+            } else if (/[\-\u2010\u2011]$/.test(previous) && /^[a-z]/.test(next)) {
+              result[result.length - 1] = previous.slice(0, -1) + next;
+              pageParagraphs.shift();
+            } else if (!/[.!?…:;”’"')\]]$/.test(previous) || /^[a-z,;:]|^[\u2014\u2013,;]/.test(next)) {
+              result[result.length - 1] = previous + ' ' + next;
+              pageParagraphs.shift();
+            }
+          }
+          result.push(...pageParagraphs);
+        }
+        // A page break can separate a chapter-number line from its title. Stitch
+        // those two extracted paragraphs together after page-edge recovery.
+        const stitched = [];
+        for (let i = 0; i < result.length; i++) {
+          const paragraph = stripWatermarks(result[i]).replace(/[ \t]+/g, ' ').trim();
+          const heading = parseChapterHeading(paragraph);
+          const next = i + 1 < result.length ? stripWatermarks(result[i + 1]).replace(/[ \t]+/g, ' ').trim() : '';
+          if (heading && !heading.title && next && looksLikeStandaloneTitle(next) && !parseChapterHeading(next)) {
+            stitched.push(paragraph + ' ' + next);
+            i++;
+          } else {
+            stitched.push(paragraph);
+          }
+        }
+        return stitched.filter(p => p && !/^[-_=*•·]{2,}$/.test(p));
+      }
+      function isAmbiguousUnpunctuatedNumericHeading(paragraph) {
+        const text = stripWatermarks(paragraph).replace(/\s+/g, ' ').trim();
+        // "2 Alice's Adventures in Wonderland" (or a large page number plus title) is often a PDF page number plus
+        // running book title, not a chapter. Punctuated styles such as "2. Title"
+        // remain high-confidence and are not affected by this guard.
+        return /^\d{1,5}\s+\S/.test(text) && !/^\d{1,5}\s*[.):：\-\u2013\u2014]/.test(text);
+      }
+      function normalizedCandidateTitle(heading) {
+        return String((heading && (heading.title || heading.displayTitle)) || '')
+          .toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+      }
+      function detectChapters(paragraphs) {
+        const detected = [];
+        const tocSkip = findContentsSkipIndexes(paragraphs);
+        const allNumberedCandidates = paragraphs.map((paragraph, index) => ({
+          index, paragraph, heading: parseChapterHeading(paragraph)
+        })).filter(item => item.heading);
+        // Repeated page-number + running-title lines can resemble unpunctuated
+        // chapters. Suppress only this ambiguous syntax when the exact title repeats
+        // several times; explicit Chapter prefixes and punctuated numeric headings
+        // are never removed by this rule.
+        const ambiguousTitleCounts = new Map();
+        for (const item of allNumberedCandidates) {
+          if (!isAmbiguousUnpunctuatedNumericHeading(item.paragraph) || !item.heading.title) continue;
+          const titleKey = normalizedCandidateTitle(item.heading);
+          if (titleKey) ambiguousTitleCounts.set(titleKey, (ambiguousTitleCounts.get(titleKey) || 0) + 1);
+        }
+        const repeatedRunningTitles = new Set([...ambiguousTitleCounts]
+          .filter(([, count]) => count >= 4).map(([title]) => title));
+        const numbered = allNumberedCandidates
+          .filter(item => !tocSkip.has(item.index))
+          .filter(item => !(isAmbiguousUnpunctuatedNumericHeading(item.paragraph)
+            && repeatedRunningTitles.has(normalizedCandidateTitle(item.heading))))
+          .map(({ index, heading }) => ({ index, heading }));
+        const special = paragraphs.map((paragraph, index) => ({ index, heading: parseSpecialSectionHeading(paragraph) }))
+          .filter(item => item.heading && !tocSkip.has(item.index));
+        const useUnnumberedFallback = numbered.length === 0;
+        const unnumbered = useUnnumberedFallback
+          ? paragraphs.map((paragraph, index) => ({ index, heading: parseUnnumberedChapterCandidate(paragraph) }))
+              .filter(item => item.heading && !tocSkip.has(item.index) && hasBodyAfterHeading(paragraphs, item.index, item.heading))
+          : [];
+        const candidates = [...numbered, ...special, ...unnumbered].sort((a, b) => a.index - b.index);
+        candidates.forEach(({ index, heading }) => {
+          const previous = detected[detected.length - 1];
+          // Suppress repeated running headers within the current chapter, but allow
+          // Roman chapter numbers to restart later in a book/part when the title differs.
+          if (previous && previous.heading.number === heading.number
+              && (previous.heading.title.toLocaleLowerCase() === heading.title.toLocaleLowerCase()
+                  || !previous.heading.title || !heading.title)) return;
+          if (previous && !heading.number && !previous.heading.number
+              && previous.heading.title.toLocaleLowerCase() === heading.title.toLocaleLowerCase()) return;
+          detected.push({ start: index, end: paragraphs.length, heading });
+        });
+        if (!detected.length) {
+          return [{ start: 0, end: paragraphs.length, heading: null, label: 'Full document', title: 'Full document' }];
+        }
+        detected.forEach((chapter, index) => {
+          chapter.end = detected[index + 1] ? detected[index + 1].start : paragraphs.length;
+          chapter.label = chapter.heading.label;
+          chapter.title = chapter.heading.displayTitle;
+        });
+        return detected;
+      }
+      function smartTitle(name) {
+        return String(name || 'Untitled document').replace(/\.(pdf|txt)$/i, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Untitled document';
+      }
+      function buildReaderViewItems(paragraphs, offset = 0, highlightChapters = true, sourceIndices = null) {
+        const items = [];
+        const chapterIndexByStart = highlightChapters
+          ? new Map(chapters.map((chapter, index) => [chapter.start, index]))
+          : null;
+        for (let localIndex = 0; localIndex < paragraphs.length; localIndex++) {
+          const paragraph = paragraphs[localIndex];
+          const globalIndex = sourceIndices && Number.isInteger(sourceIndices[localIndex])
+            ? sourceIndices[localIndex] : offset + localIndex;
+          const chapterIndex = chapterIndexByStart ? (chapterIndexByStart.get(globalIndex) ?? -1) : -1;
+          const detectedHeading = chapterIndex >= 0 ? chapters[chapterIndex].heading : null;
+          const isHeadingCandidate = highlightChapters && Boolean(parseChapterHeading(paragraph)
+            || parseSpecialSectionHeading(paragraph)
+            || parseUnnumberedChapterCandidate(paragraph));
+          if (detectedHeading && highlightChapters) {
+            items.push({ kind: 'chapter', sourceIndex: globalIndex, chapterIndex, heading: detectedHeading, text: detectedHeading.displayTitle });
+          } else if (highlightChapters && isHeadingCandidate) {
+            // Suppress TOC entries and repeated running headers that were not accepted as real starts.
+            continue;
+          } else {
+            const text = paragraph;
+            items.push({ kind: 'p', sourceIndex: globalIndex, text, dialogue: /^[“‘"'«‹—–]/.test(String(paragraph).trim()) });
+          }
+        }
+        return items;
+      }
+      function createReaderItemNode(item) {
+        if (item.kind === 'chapter') {
+          const block = document.createElement('section');
+          block.className = 'chapter-opening';
+          block.dataset.chapterIndex = String(item.chapterIndex);
+          block.dataset.readerParagraphIndex = String(item.sourceIndex);
+          const kicker = document.createElement('div');
+          kicker.className = 'chapter-kicker';
+          kicker.textContent = item.heading.label;
+          const title = document.createElement('h3');
+          title.className = 'chapter-opening-title';
+          title.textContent = item.heading.displayTitle;
+          block.append(kicker, title);
+          if (item.sourceIndex === activeSearchSourceIndex) block.classList.add('search-result-active');
+          return block;
+        }
+        const p = document.createElement('p');
+        p.textContent = stripWatermarks(item.text);
+        if (item.dialogue) p.classList.add('dialogue');
+        p.dataset.readerParagraphIndex = String(item.sourceIndex);
+        if (item.sourceIndex === activeSearchSourceIndex) p.classList.add('search-result-active');
+        return p;
+      }
+      function virtualEstimateMetrics() {
+        const style = getComputedStyle(prose);
+        const rootStyle = getComputedStyle(document.documentElement);
+        const fontSize = parseFloat(style.fontSize) || 19;
+        const rootFontSize = parseFloat(rootStyle.fontSize) || 16;
+        const gapValue = String(rootStyle.getPropertyValue('--paragraph-gap') || '1.18em').trim().match(/^([0-9.]+)(px|em|rem)?$/i);
+        const rawGap = gapValue ? Number(gapValue[1]) : 1.18;
+        const gapUnit = gapValue ? gapValue[2] : 'em';
+        const gap = gapUnit === 'px' ? rawGap : rawGap * (gapUnit === 'rem' ? rootFontSize : fontSize);
+        return {
+          width: Math.max(280, prose.clientWidth || reader.clientWidth || 760),
+          fontSize,
+          rootFontSize,
+          lineHeight: parseFloat(style.lineHeight) || fontSize * 1.88,
+          gap
+        };
+      }
+      function estimateReaderItemExtent(item, metrics) {
+        const { width, fontSize, rootFontSize, lineHeight, gap } = metrics;
+        let height;
+        let marginTop = 0;
+        let marginBottom = 0;
+        if (item.kind === 'chapter') {
+          const titleWidth = Math.max(240, width - 40);
+          const charsPerLine = Math.max(20, titleWidth / (fontSize * 0.53));
+          const titleLines = Math.max(1, Math.ceil(String(item.heading.displayTitle || '').length / charsPerLine));
+          height = 132 + titleLines * Math.max(28, fontSize * 1.55);
+          marginTop = rootFontSize * 4.4;
+          marginBottom = rootFontSize * 3;
+        } else {
+          const charsPerLine = Math.max(22, width / (fontSize * 0.44));
+          const lines = Math.max(1, Math.ceil(String(item.text || '').length / charsPerLine));
+          height = lines * lineHeight;
+          marginBottom = gap * (item.dialogue ? 1.12 : 1);
+        }
+        return Math.max(24, marginTop + height + marginBottom);
+      }
+      // A Fenwick tree maintains cumulative paragraph heights incrementally. Updating
+      // a measured paragraph is O(log n), rather than rebuilding a prefix table for the
+      // entire novel every time the virtual window moves.
+      function rebuildVirtualHeightIndex() {
+        const count = virtualReader.heights.length;
+        const tree = new Float64Array(count + 1);
+        let total = 0;
+        for (let i = 1; i <= count; i++) {
+          const value = Math.max(1, Number(virtualReader.heights[i - 1]) || 1);
+          total += value;
+          tree[i] += value;
+          const parent = i + (i & -i);
+          if (parent <= count) tree[parent] += tree[i];
+        }
+        virtualReader.heightTree = tree;
+        virtualReader.totalHeight = total;
+      }
+      function virtualPrefixAt(itemCount) {
+        const tree = virtualReader.heightTree;
+        const count = virtualReader.items.length;
+        let i = Math.max(0, Math.min(count, Math.floor(Number(itemCount) || 0)));
+        let sum = 0;
+        while (i > 0) {
+          sum += tree[i];
+          i -= i & -i;
+        }
+        return sum;
+      }
+      function updateVirtualItemHeight(index, extent) {
+        const heights = virtualReader.heights;
+        const tree = virtualReader.heightTree;
+        if (index < 0 || index >= heights.length || !tree.length) return;
+        const oldValue = Math.max(1, Number(heights[index]) || 1);
+        const nextValue = Math.max(1, Number(extent) || 1);
+        const delta = nextValue - oldValue;
+        if (Math.abs(delta) < 0.1) return;
+        heights[index] = nextValue;
+        virtualReader.totalHeight += delta;
+        for (let i = index + 1; i < tree.length; i += i & -i) tree[i] += delta;
+      }
+      function virtualIndexAtOffset(offset) {
+        const count = virtualReader.items.length;
+        if (!count) return 0;
+        const wanted = Math.max(0, Math.min(Number(offset) || 0, virtualReader.totalHeight || 0));
+        const tree = virtualReader.heightTree;
+        let index = 0;
+        let accumulated = 0;
+        let bit = 1;
+        while ((bit << 1) <= count) bit <<= 1;
+        for (; bit > 0; bit >>= 1) {
+          const next = index + bit;
+          if (next <= count && accumulated + tree[next] < wanted) {
+            index = next;
+            accumulated += tree[next];
+          }
+        }
+        return Math.min(count - 1, index);
+      }
+      function virtualSourceIndex(sourceIndex) {
+        if (!virtualReader.active) return -1;
+        // Items are sorted by original paragraph index. Binary search gives an exact
+        // match or the next visible item when a TOC/duplicate heading was omitted.
+        let low = 0, high = virtualReader.items.length - 1, result = -1;
+        while (low <= high) {
+          const middle = (low + high) >> 1;
+          if (virtualReader.items[middle].sourceIndex >= sourceIndex) {
+            result = middle;
+            if (virtualReader.items[middle].sourceIndex === sourceIndex) return middle;
+            high = middle - 1;
+          } else low = middle + 1;
+        }
+        return result;
+      }
+      function renderVirtualWindow(start, end, keepScreenPosition = false, preferredSourceIndex = null, preferredScreenTop = null, measureFromGuideOnly = false) {
+        if (!virtualReader.active || virtualReader.rendering) return;
+        const total = virtualReader.items.length;
+        if (!total) return;
+        start = Math.max(0, Math.min(total - 1, Math.floor(start)));
+        end = Math.max(start + 1, Math.min(total, Math.ceil(end)));
+        virtualReader.rendering = true;
+        let anchorSource = preferredSourceIndex;
+        let anchorTop = preferredScreenTop;
+        // Keep the currently readable paragraph pinned when the old and new windows overlap.
+        if (keepScreenPosition && anchorSource == null && renderedReaderItems.length) {
+          const oldAnchor = currentReadingAnchor();
+          if (oldAnchor.anchor) {
+            const rect = oldAnchor.anchor.getBoundingClientRect();
+            if (rect.bottom > -100 && rect.top < window.innerHeight + 100) {
+              anchorSource = oldAnchor.paragraphIndex;
+              anchorTop = rect.top;
+            }
+          }
+        }
+        virtualReader.start = start;
+        virtualReader.end = end;
+        virtualReader.top.style.height = `${virtualPrefixAt(start)}px`;
+        virtualReader.bottom.style.height = `${Math.max(0, virtualReader.totalHeight - virtualPrefixAt(end))}px`;
+        const fragment = document.createDocumentFragment();
+        for (let i = start; i < end; i++) {
+          const item = virtualReader.items[i];
+          const node = createReaderItemNode(item);
+          node.dataset.readerItemIndex = String(i);
+          node.dataset.readerViewIndex = String(i);
+          if (i === total - 1) node.classList.add('virtual-final-item');
+          fragment.appendChild(node);
+        }
+        virtualReader.window.replaceChildren(fragment);
+        renderedReaderItems = Array.from(virtualReader.window.querySelectorAll('[data-reader-item-index][data-reader-paragraph-index]'));
+        // If this is a large scrollbar jump, preserve the screen position of the item
+        // represented by the viewport's estimated source offset instead of the old offscreen DOM.
+        if (keepScreenPosition && (anchorSource == null || virtualSourceIndex(anchorSource) < start || virtualSourceIndex(anchorSource) >= end)) {
+          const guideOffset = Math.max(0, readingGuideY() - prose.getBoundingClientRect().top);
+          const targetIdx = Math.max(start, Math.min(end - 1, virtualIndexAtOffset(guideOffset)));
+          const node = virtualReader.window.querySelector(`[data-reader-view-index="${targetIdx}"]`);
+          if (node) { anchorSource = virtualReader.items[targetIdx].sourceIndex; anchorTop = node.getBoundingClientRect().top; }
+        }
+        // During a normal scroll, don't revise heights above the reading guide: their
+        // cumulative correction can move the active passage and interrupt touchpad inertia.
+        // As the reader moves back through the book those estimates are refined in turn.
+        // Explicit navigation still measures the entire mounted range for accurate targeting.
+        const nodes = Array.from(virtualReader.window.children);
+        const guideY = measureFromGuideOnly ? readingGuideY() : -Infinity;
+        const extents = [];
+        for (let local = 0; local < nodes.length; local++) {
+          const node = nodes[local];
+          const rect = node.getBoundingClientRect();
+          if (measureFromGuideOnly && rect.bottom < guideY) continue;
+          const style = getComputedStyle(node);
+          const mt = parseFloat(style.marginTop) || 0;
+          const mb = parseFloat(style.marginBottom) || 0;
+          extents.push({ index: start + local, extent: Math.max(1, mt + rect.height + mb) });
+        }
+        for (const entry of extents) updateVirtualItemHeight(entry.index, entry.extent);
+        virtualReader.top.style.height = `${virtualPrefixAt(start)}px`;
+        virtualReader.bottom.style.height = `${Math.max(0, virtualReader.totalHeight - virtualPrefixAt(end))}px`;
+        if (anchorSource != null && Number.isFinite(anchorTop)) {
+          const node = virtualReader.window.querySelector(`[data-reader-paragraph-index="${anchorSource}"]`);
+          if (node) {
+            const nextTop = node.getBoundingClientRect().top;
+            const delta = nextTop - anchorTop;
+            if (Math.abs(delta) > 0.5) window.scrollTo({ top: Math.max(0, window.scrollY + delta), behavior: 'auto' });
+          }
+        }
+        virtualReader.metricsVersion++;
+        virtualReader.rendering = false;
+      }
+      function virtualWindowAtStart() {
+        const count = virtualReader.items.length;
+        if (!count) return { start: 0, end: 0 };
+        let end = Math.min(count, virtualIndexAtOffset(window.innerHeight + VIRTUAL_OVERSCAN_PX) + 1);
+        end = Math.max(Math.min(count, VIRTUAL_MIN_WINDOW_ITEMS), end);
+        return { start: 0, end };
+      }
+      function virtualWindowForScreenPosition() {
+        const count = virtualReader.items.length;
+        if (!count) return { start: 0, end: 0 };
+        const proseRect = prose.getBoundingClientRect();
+        const visibleStart = Math.max(0, -proseRect.top);
+        const visibleEnd = visibleStart + window.innerHeight;
+        const startOffset = Math.max(0, visibleStart - VIRTUAL_OVERSCAN_PX);
+        const endOffset = visibleEnd + VIRTUAL_OVERSCAN_PX;
+        let start = virtualIndexAtOffset(startOffset);
+        let end = Math.min(count, virtualIndexAtOffset(endOffset) + 1);
+        if (end - start < VIRTUAL_MIN_WINDOW_ITEMS) {
+          const extra = Math.ceil((VIRTUAL_MIN_WINDOW_ITEMS - (end - start)) / 2);
+          start = Math.max(0, start - extra);
+          end = Math.min(count, end + extra);
+        }
+        return { start, end };
+      }
+      function updateVirtualReaderWindow(force = false) {
+        // Mode transitions explicitly mount their target window. Ignore only the immediate
+        // scroll event generated by those programmatic jumps, not genuine ongoing input.
+        if (focusTransitionInProgress || (!force && performance.now() < virtualScrollSettleUntil)) return;
+        if (!virtualReader.active || virtualReader.rendering || !reader || reader.classList.contains('hidden')) return;
+        const range = virtualWindowForScreenPosition();
+        if (!range.end) return;
+        if (!force && range.start >= virtualReader.start + 12 && range.end <= virtualReader.end - 12) return;
+        if (!force && range.start === virtualReader.start && range.end === virtualReader.end) return;
+        // During ordinary scrolling, don't move the page to compensate for estimate
+        // corrections. Only measure at/after the reading guide, so an estimate above the
+        // live passage cannot push against the user's touchpad gesture. The height tree
+        // keeps the cumulative map incremental; explicit navigation uses its own anchor.
+        renderVirtualWindow(range.start, range.end, false, null, null, true);
+      }
+      function ensureVirtualSourceIndex(sourceIndex, screenTop = null) {
+        if (!virtualReader.active) return null;
+        const viewIndex = virtualSourceIndex(sourceIndex);
+        if (viewIndex < 0) return null;
+        const start = Math.max(0, viewIndex - 35);
+        const end = Math.min(virtualReader.items.length, Math.max(viewIndex + 36, start + VIRTUAL_MIN_WINDOW_ITEMS));
+        renderVirtualWindow(start, end, false);
+        const node = virtualReader.window.querySelector(`[data-reader-paragraph-index="${virtualReader.items[viewIndex].sourceIndex}"]`);
+        if (node && screenTop != null) {
+          const delta = node.getBoundingClientRect().top - screenTop;
+          window.scrollTo({ top: Math.max(0, window.scrollY + delta), behavior: 'auto' });
+        }
+        return node;
+      }
+      function resetVirtualReaderEstimates() {
+        if (!virtualReader.active) return;
+        const anchor = currentReadingAnchor();
+        const sourceIndex = anchor && anchor.anchor ? anchor.paragraphIndex : null;
+        const top = anchor && anchor.anchor ? anchor.anchorTop : readingGuideY();
+        const metrics = virtualEstimateMetrics();
+        virtualReader.heights = virtualReader.items.map(item => estimateReaderItemExtent(item, metrics));
+        rebuildVirtualHeightIndex();
+        let center = sourceIndex == null ? virtualIndexAtOffset(Math.max(0, -prose.getBoundingClientRect().top + readingGuideY())) : virtualSourceIndex(sourceIndex);
+        if (center < 0) center = 0;
+        const range = { start: Math.max(0, center - 35), end: Math.min(virtualReader.items.length, center + 60) };
+        renderVirtualWindow(range.start, range.end, sourceIndex != null, sourceIndex, top);
+      }
+      function renderVirtualizedParagraphs(paragraphs, offset = 0, highlightChapters = true, sourceIndices = null) {
+        prose.classList.add('virtualized-reader');
+        const items = buildReaderViewItems(paragraphs, offset, highlightChapters, sourceIndices);
+        virtualReader = {
+          active: true, items, heights: [], heightTree: [], totalHeight: 0,
+          start: 0, end: 0, top: null, window: null, bottom: null, rendering: false,
+          metricsVersion: 0, activeSearchSourceIndex: null
+        };
+        const metrics = virtualEstimateMetrics();
+        virtualReader.heights = items.map(item => estimateReaderItemExtent(item, metrics));
+        rebuildVirtualHeightIndex();
+        const top = document.createElement('div');
+        top.className = 'virtual-spacer virtual-top-spacer'; top.setAttribute('aria-hidden', 'true');
+        const content = document.createElement('div'); content.className = 'virtual-window';
+        const bottom = document.createElement('div');
+        bottom.className = 'virtual-spacer virtual-bottom-spacer'; bottom.setAttribute('aria-hidden', 'true');
+        virtualReader.top = top; virtualReader.window = content; virtualReader.bottom = bottom;
+        prose.replaceChildren(top, content, bottom);
+        // Every freshly rendered view starts at the beginning. Saved positions,
+        // chapter jumps, and Focus Here explicitly mount their target after render;
+        // inheriting the previous document's scrollY here would place the new window
+        // far below a newly reset page and leave a blank top spacer.
+        const initialRange = virtualWindowAtStart();
+        renderVirtualWindow(initialRange.start, initialRange.end, false);
+      }
+      function renderParagraphs(paragraphs, offset = 0, highlightChapters = true, sourceIndices = null) {
+        if (paragraphs.length >= VIRTUALIZE_THRESHOLD) {
+          renderVirtualizedParagraphs(paragraphs, offset, highlightChapters, sourceIndices);
+          return;
+        }
+        prose.classList.remove('virtualized-reader');
+        virtualReader.active = false;
+        virtualReader.items = [];
+        prose.replaceChildren();
+        renderedReaderItems = [];
+        const items = buildReaderViewItems(paragraphs, offset, highlightChapters, sourceIndices);
+        const fragment = document.createDocumentFragment();
+        for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+          const node = createReaderItemNode(items[itemIndex]);
+          node.dataset.readerItemIndex = String(itemIndex);
+          fragment.appendChild(node);
+        }
+        prose.appendChild(fragment);
+        renderedReaderItems = Array.from(prose.querySelectorAll('[data-reader-item-index][data-reader-paragraph-index]'));
+      }
+      function updateChapterControls() {
+        const realChapters = hasDetectedChapters && chapters.length > 1;
+        chapterOptions.replaceChildren();
+        if (hasDetectedChapters) {
+          chapters.forEach((chapter) => {
+            const option = document.createElement('option');
+            option.value = chapter.heading.selectorLabel;
+            chapterOptions.appendChild(option);
+          });
+          chapterSelect.disabled = false;
+          chapterSelect.placeholder = 'Type a chapter number or title…';
+          chapterSelect.value = chapters[currentChapterIndex].heading.selectorLabel;
+        } else {
+          chapterSelect.value = '';
+          chapterSelect.placeholder = 'No chapter headings detected';
+          chapterSelect.disabled = true;
+        }
+        prevChapterBtn.disabled = !realChapters || currentChapterIndex <= 0;
+        nextChapterBtn.disabled = !realChapters || currentChapterIndex >= chapters.length - 1;
+        chapterPosition.textContent = hasDetectedChapters ? `${currentChapterIndex + 1} / ${chapters.length}` : 'Full document';
+      }
+      function matchChapterQuery(query) {
+        const q = String(query || '').trim().toLocaleLowerCase();
+        if (!q || !hasDetectedChapters) return -1;
+        let index = chapters.findIndex(chapter => chapter.heading.selectorLabel.toLocaleLowerCase() === q);
+        if (index >= 0) return index;
+        const numberQuery = q.match(/^(?:chapter|ch\.?)?\s*#?\s*([0-9]{1,5}|[ivxlcdm]{1,10})(?:\s*[:.\-\u2013\u2014].*)?$/i);
+        if (numberQuery) {
+          index = chapters.findIndex(chapter => String(chapter.heading.number || '').toLocaleLowerCase() === numberQuery[1].toLocaleLowerCase());
+          if (index >= 0) return index;
+        }
+        return chapters.findIndex(chapter => chapter.heading.selectorLabel.toLocaleLowerCase().includes(q));
+      }
+      function renderCurrentView() {
+        if (!documentParagraphs.length) return;
+        // A passage-specific alignment may add temporary tail room for a short/last
+        // paragraph. Clear it whenever the chapter/view is rendered again.
+        prose.style.paddingBottom = '';
+        if (document.body.classList.contains('focus-mode')) {
+          const chapter = chapters[currentChapterIndex] || chapters[0];
+          const hasHeading = Boolean(chapter && chapter.heading);
+          const contentStart = chapter ? chapter.start + (hasHeading ? 1 : 0) : 0;
+          const contentEnd = chapter ? chapter.end : documentParagraphs.length;
+          const bodyParagraphEntries = [];
+          for (let sourceIndex = contentStart; sourceIndex < contentEnd; sourceIndex++) {
+            const paragraph = documentParagraphs[sourceIndex];
+            if (parseChapterHeading(paragraph) || parseSpecialSectionHeading(paragraph)) continue;
+            bodyParagraphEntries.push({ paragraph, sourceIndex });
+          }
+          const bodyParagraphs = bodyParagraphEntries.map(entry => entry.paragraph);
+          const bodySourceIndices = bodyParagraphEntries.map(entry => entry.sourceIndex);
+          readerTitle.textContent = hasHeading
+            ? `${chapter.heading.label} · ${currentChapterIndex + 1} of ${chapters.length}`
+            : 'A reflowed reading copy';
+          documentHeading.textContent = hasHeading ? chapter.heading.displayTitle : smartTitle(openedFilename);
+          renderParagraphs(bodyParagraphs, contentStart, false, bodySourceIndices);
+          footerPages.textContent = hasHeading
+            ? `${chapter.heading.label} · ${bodyParagraphs.length.toLocaleString()} paragraphs`
+            : `${bodyParagraphs.length.toLocaleString()} paragraphs · full document`;
+          updateChapterControls();
+        } else {
+          readerTitle.textContent = documentParagraphs.length
+            ? `A reflowed reading copy${chapters.length > 1 ? ' · ' + chapters.length + ' chapters detected' : ''}`
+            : 'A reflowed reading copy';
+          documentHeading.textContent = smartTitle(openedFilename);
+          renderParagraphs(documentParagraphs, 0, true);
+          footerPages.textContent = `${documentParagraphs.length.toLocaleString()} paragraphs · text extracted locally`;
+          updateChapterControls();
+        }
+      }
+      function guessCurrentChapterFromScroll() {
+        if (!hasDetectedChapters || !chapters.length) return 0;
+        const anchorInfo = currentReadingAnchor();
+        const bySource = getChapterIndexForParagraph(Number(anchorInfo.paragraphIndex));
+        if (bySource >= 0) return Math.min(Math.max(bySource, 0), chapters.length - 1);
+        return Math.min(Math.max(currentChapterIndex || 0, 0), chapters.length - 1);
+      }
+      // Progress is measured against a stable location in the original extracted
+      // text, not the current DOM height. Focus mode renders only one chapter, so a
+      // scroll-height ratio would otherwise count that chapter as a whole book.
+      function buildSourceParagraphOffsets(paragraphs) {
+        sourceParagraphOffsets = new Array(paragraphs.length);
+        totalSourceCharacters = 0;
+        for (let i = 0; i < paragraphs.length; i++) {
+          sourceParagraphOffsets[i] = totalSourceCharacters;
+          totalSourceCharacters += String(paragraphs[i] || '').length;
+        }
+      }
+      function clampPercent(value) { return Math.max(0, Math.min(100, Number(value) || 0)); }
+      function sourceProgressPercent(paragraphIndex, withinParagraph = 0) {
+        if (!documentParagraphs.length || !totalSourceCharacters) return 0;
+        const index = Math.max(0, Math.min(Number(paragraphIndex) || 0, documentParagraphs.length - 1));
+        const textLength = String(documentParagraphs[index] || '').length;
+        const fraction = Math.max(0, Math.min(1, Number(withinParagraph) || 0));
+        const characterPosition = (sourceParagraphOffsets[index] || 0) + textLength * fraction;
+        return clampPercent(characterPosition / totalSourceCharacters * 100);
+      }
+      function currentReadingAnchor() {
+        const referenceY = readingGuideY();
+        const items = renderedReaderItems;
+        if (!items.length) return { anchor: null, paragraphIndex: 0, anchorTop: 0, fraction: 0 };
+        // Reader items are in document order, so their top coordinates are
+        // monotonic. Binary search avoids thousands of layout reads per scroll
+        // event when the reader is deep inside a long book.
+        let low = 0;
+        let high = items.length - 1;
+        let anchorIndex = 0;
+        while (low <= high) {
+          const middle = Math.floor((low + high) / 2);
+          if (items[middle].getBoundingClientRect().top <= referenceY) {
+            anchorIndex = middle;
+            low = middle + 1;
+          } else {
+            high = middle - 1;
+          }
+        }
+        const anchor = items[anchorIndex] || null;
+        if (!anchor) return { anchor: null, paragraphIndex: 0, anchorTop: 0, fraction: 0 };
+        const rect = anchor.getBoundingClientRect();
+        const paragraphIndex = Number(anchor.dataset.readerParagraphIndex);
+        const fraction = rect.height > 0 ? Math.max(0, Math.min(1, (referenceY - rect.top) / rect.height)) : 0;
+        return {
+          anchor,
+          paragraphIndex: Number.isInteger(paragraphIndex) ? paragraphIndex : 0,
+          anchorTop: rect.top,
+          fraction
+        };
+      }
+      function readingGuideY() {
+        return Math.min(155, Math.max(80, window.innerHeight * 0.23));
+      }
+      function elementIntersectsViewport(element) {
+        if (!element || element.disabled) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < window.innerHeight
+          && rect.right > 0 && rect.left < window.innerWidth;
+      }
+      function getChapterIndexForParagraph(sourceIndex) {
+        if (!hasDetectedChapters || !chapters.length || !Number.isInteger(sourceIndex)) return -1;
+        return chapters.findIndex(chapter => sourceIndex >= chapter.start && sourceIndex < chapter.end);
+      }
+      function shouldOfferFocusHere() {
+        if (reader.classList.contains('hidden') || document.body.classList.contains('focus-mode')
+          || !hasDetectedChapters || chapters.length < 2 || resumeDialog.classList.contains('show')
+          || loading.classList.contains('show') || window.innerWidth <= 700) return false;
+        const readerRect = reader.getBoundingClientRect();
+        const proseRect = prose.getBoundingClientRect();
+        const guideY = readingGuideY();
+        // Only offer the control when the reader's prose crosses the reading guide.
+        // This avoids placing a stray icon next to the setup controls or page chrome.
+        if (proseRect.top > guideY + 35 || proseRect.bottom < guideY - 35) return false;
+        // Give the fixed margin control enough breathing room; on narrow screens the
+        // existing toolbar/footer actions remain the uncluttered and reliable option.
+        if (window.innerWidth - readerRect.right < 145 || readerRect.right < 0) return false;
+        const anchorInfo = currentReadingAnchor();
+        const sourceIndex = Number(anchorInfo.paragraphIndex);
+        const chapterIndex = getChapterIndexForParagraph(sourceIndex);
+        if (chapterIndex < 0) return false;
+        // Avoid duplicating the established entry/exit controls when they are actually
+        // visible at the book's start or end. In the middle of the book, show the margin
+        // action even if the document toolbar happens to remain in the viewport.
+        const nearStart = chapterIndex === 0;
+        const nearEnd = chapterIndex === chapters.length - 1;
+        if (nearStart && elementIntersectsViewport(fileFocusBtn)) return false;
+        if (nearEnd && elementIntersectsViewport($('#focusBtn'))) return false;
+        return true;
+      }
+      function refreshFocusHereTabStop() {
+        const available = !focusHereButton.disabled && shouldOfferFocusHere();
+        focusHereButton.tabIndex = available ? 0 : -1;
+        if (!available) {
+          if (focusHereButton.matches(':focus')) focusHereButton.blur();
+          hideFocusHereButton(true);
+        }
+      }
+      function positionFocusHereButton() {
+        const readerRect = reader.getBoundingClientRect();
+        const guideY = readingGuideY();
+        const buttonLeft = readerRect.right + 12;
+        const tooltipSpace = window.innerWidth - (buttonLeft + 34) - 20;
+        focusHereButton.style.left = `${Math.round(buttonLeft)}px`;
+        focusHereButton.style.top = `${Math.round(guideY - 17)}px`;
+        focusHereButton.style.setProperty('--focus-tooltip-max-width', `${Math.max(82, Math.min(180, tooltipSpace))}px`);
+      }
+      function clearFocusHereHideTimer() {
+        if (focusHereHideTimer) clearTimeout(focusHereHideTimer);
+        focusHereHideTimer = null;
+      }
+      function hideFocusHereButton(force = false) {
+        clearFocusHereHideTimer();
+        if (!force && (focusHereButton.matches(':hover') || focusHereButton.matches(':focus'))) return;
+        focusHereButton.classList.remove('is-visible');
+      }
+      function scheduleFocusHereHide() {
+        clearFocusHereHideTimer();
+        focusHereHideTimer = setTimeout(() => {
+          focusHereHideTimer = null;
+          if (!focusHereButton.matches(':hover') && !focusHereButton.matches(':focus')) {
+            focusHereButton.classList.remove('is-visible');
+          }
+        }, 520);
+      }
+      function pointerIsInReadingMargin(event) {
+        if (!shouldOfferFocusHere()) return false;
+        const readerRect = reader.getBoundingClientRect();
+        const guideY = readingGuideY();
+        const marginRight = Math.min(window.innerWidth - 4, readerRect.right + 115);
+        return event.clientX >= readerRect.right + 2 && event.clientX <= marginRight
+          && Math.abs(event.clientY - guideY) <= 48;
+      }
+      function handleFocusHerePointerMove(event) {
+        if (pointerIsInReadingMargin(event)) {
+          clearFocusHereHideTimer();
+          focusHereButton.tabIndex = 0;
+          positionFocusHereButton();
+          focusHereButton.classList.add('is-visible');
+        } else if (focusHereButton.classList.contains('is-visible')) {
+          // Don't flicker as the pointer crosses the gap from margin to the button.
+          const rect = focusHereButton.getBoundingClientRect();
+          const overButton = event.clientX >= rect.left - 3 && event.clientX <= rect.right + 3
+            && event.clientY >= rect.top - 8 && event.clientY <= rect.bottom + 8;
+          if (!overButton && !focusHereButton.matches(':focus')) scheduleFocusHereHide();
+        }
+      }
+      function openFocusAtCurrentPassage() {
+        if (!documentParagraphs.length || !hasDetectedChapters || chapters.length < 2) return;
+        const anchorInfo = currentReadingAnchor();
+        const sourceIndex = Math.max(0, Math.min(documentParagraphs.length - 1, Number(anchorInfo.paragraphIndex) || 0));
+        const sourceFraction = Math.max(0, Math.min(1, Number(anchorInfo.fraction) || 0));
+        let chapterIndex = getChapterIndexForParagraph(sourceIndex);
+        if (chapterIndex < 0) chapterIndex = guessCurrentChapterFromScroll();
+        chapterIndex = Math.max(0, Math.min(chapterIndex, chapters.length - 1));
+        currentChapterIndex = chapterIndex;
+        hideFocusHereButton(true);
+        focusTransitionInProgress = true;
+        document.body.classList.add('focus-mode');
+        renderCurrentView();
+        // Mount the target window as well if the selected chapter itself is very large.
+        // The target is aligned after layout settles below.
+        // Reset the old Normal-mode scroll offset immediately. Otherwise a long book's
+        // old scrollY can be clamped to the bottom of the chapter-only view for a frame,
+        // briefly recording false extra progress before the source anchor is restored.
+        scrollInstantly(0);
+        if (virtualReader.active) ensureVirtualSourceIndex(sourceIndex);
+        // Wait for Focus mode's chapter-only layout to settle, then align the original
+        // source paragraph (or the next real paragraph if the target was a chapter title)
+        // to the same reading guide. Progress is source-text based, so this mode switch
+        // must not add the chapter's local scroll ratio to book progress.
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const chapter = chapters[chapterIndex];
+          let target = prose.querySelector(`[data-reader-paragraph-index="${sourceIndex}"]`);
+          let usedExactSource = Boolean(target);
+          if (!target && chapter) {
+            const candidates = Array.from(prose.querySelectorAll('[data-reader-paragraph-index]'))
+              .filter(item => {
+                const index = Number(item.dataset.readerParagraphIndex);
+                return index >= chapter.start && index < chapter.end;
+              });
+            target = candidates.find(item => Number(item.dataset.readerParagraphIndex) >= sourceIndex) || candidates[candidates.length - 1] || null;
+          }
+          if (target) {
+            const rect = target.getBoundingClientRect();
+            const fraction = usedExactSource ? sourceFraction : 0;
+            const targetPoint = rect.top + rect.height * fraction;
+            const desiredScrollTop = Math.max(0, window.scrollY + targetPoint - readingGuideY());
+            const maxScrollBeforePadding = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            // Near a chapter's end, the browser may not have enough scrollable tail to
+            // place the selected paragraph at the guide. Add only the minimum temporary
+            // blank space needed to align it; this contains no source text and therefore
+            // cannot change the book-relative progress percentage. A later view render
+            // removes this padding.
+            const extraTailRoom = Math.ceil(Math.max(0, desiredScrollTop - maxScrollBeforePadding) + 2);
+            if (extraTailRoom > 2) prose.style.paddingBottom = `${extraTailRoom}px`;
+            scrollInstantly(desiredScrollTop);
+          } else {
+            scrollInstantly(0);
+          }
+          focusTransitionInProgress = false;
+          updateChapterControls();
+          updateScrollProgress();
+          scheduleReadingSave();
+        }));
+      }
+      window.addEventListener('mousemove', handleFocusHerePointerMove, { passive: true });
+      window.addEventListener('mouseleave', scheduleFocusHereHide);
+      focusHereButton.addEventListener('mouseenter', clearFocusHereHideTimer);
+      focusHereButton.addEventListener('mouseleave', scheduleFocusHereHide);
+      focusHereButton.addEventListener('focus', () => {
+        clearFocusHereHideTimer();
+        if (focusHereButton.disabled || !shouldOfferFocusHere()) {
+          focusHereButton.blur();
+          hideFocusHereButton(true);
+          return;
+        }
+        positionFocusHereButton();
+        focusHereButton.classList.add('is-visible');
+      });
+      focusHereButton.addEventListener('blur', scheduleFocusHereHide);
+      focusHereButton.addEventListener('click', openFocusAtCurrentPassage);
+
+      function currentSourceProgressPercent(anchorInfo = null) {
+        if (!documentParagraphs.length) return 0;
+        const info = anchorInfo || currentReadingAnchor();
+        const index = Number.isInteger(info.paragraphIndex) ? info.paragraphIndex : 0;
+        const percent = sourceProgressPercent(index, info.fraction);
+        // Only the end of the actual source document is 100%; the bottom of an
+        // individual Focus-mode chapter is not the bottom of the book.
+        const atDocumentBottom = (window.scrollY || document.documentElement.scrollTop || 0)
+          + window.innerHeight >= document.documentElement.scrollHeight - 3;
+        const focusMode = document.body.classList.contains('focus-mode');
+        const inLastChapter = !focusMode || !hasDetectedChapters || !chapters.length || currentChapterIndex >= chapters.length - 1;
+        return atDocumentBottom && inLastChapter ? 100 : percent;
+      }
+      function estimateSavedSourceProgress(state) {
+        if (!state || !documentParagraphs.length) return 0;
+        // Before source-text-v2, Focus mode stored a paragraph index after filtering
+        // headings out of that chapter, so it was not a true document-wide index.
+        // Recover the chapter by identity and use the saved within-chapter ratio.
+        if (state.focusMode && state.progressModel !== READING_PROGRESS_MODEL) {
+          const savedChapter = resolveSavedChapterIndex(state);
+          const chapter = chapters[savedChapter];
+          if (chapter) {
+            const start = sourceParagraphOffsets[chapter.start] || 0;
+            const end = chapter.end < documentParagraphs.length
+              ? (sourceParagraphOffsets[chapter.end] || totalSourceCharacters)
+              : totalSourceCharacters;
+            const withinChapter = Math.max(0, Math.min(1, Number(state.scrollRatio) || 0));
+            return clampPercent(((start + (end - start) * withinChapter) / totalSourceCharacters) * 100);
+          }
+        }
+        if (state.paragraphIndex != null && Number.isInteger(Number(state.paragraphIndex))) {
+          return sourceProgressPercent(Number(state.paragraphIndex), 0);
+        }
+        const savedChapter = resolveSavedChapterIndex(state);
+        const chapter = chapters[savedChapter];
+        if (chapter) return sourceProgressPercent(chapter.start, 0);
+        // For very old records without a source-text anchor, preserve a conservative
+        // estimate until the actual restored anchor can be measured in the DOM.
+        return clampPercent(state.progressPercent);
+      }
+      const READING_PROGRESS_KEY = 'quietReaderProgressV1';
+      const READING_PROGRESS_MODEL = 'source-text-v2';
+      const MAX_SAVED_BOOKS = 40;
+      function fingerprintDocument(paragraphs) {
+        // Two independent 32-bit rolling hashes identify the extracted text without
+        // storing the book itself. It still works if the PDF is renamed or moved.
+        let hashA = 0x811c9dc5;
+        let hashB = 0x9e3779b9;
+        let charLength = 0;
+        const feed = (value) => {
+          for (let i = 0; i < value.length; i++) {
+            const code = value.charCodeAt(i);
+            hashA = Math.imul(hashA ^ code, 0x01000193);
+            hashB = Math.imul(hashB ^ code, 0x5bd1e995);
+            hashB ^= hashB >>> 13;
+            charLength++;
+          }
+          // Add a separator so paragraph boundaries contribute to the fingerprint.
+          hashA = Math.imul(hashA ^ 10, 0x01000193);
+          hashB = Math.imul(hashB ^ 10, 0x5bd1e995);
+          charLength++;
+        };
+        for (const paragraph of paragraphs) feed(String(paragraph));
+        return `${paragraphs.length.toString(36)}-${charLength.toString(36)}-${(hashA >>> 0).toString(36)}-${(hashB >>> 0).toString(36)}`;
+      }
+      function readProgressStore() {
+        try {
+          const value = JSON.parse(localStorage.getItem(READING_PROGRESS_KEY) || '{}');
+          return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+        } catch (_) { return {}; }
+      }
+      function loadReadingState(fingerprint) {
+        if (!fingerprint) return null;
+        const state = readProgressStore()[fingerprint];
+        if (!state || state.version !== 1) return null;
+        return state;
+      }
+      function stateHasMeaningfulProgress(state) {
+        if (!state) return false;
+        // Absolute scrollY is not enough: a long PDF's top toolbar/front matter can
+        // itself sit hundreds of pixels below document y=0. Use the book-relative
+        // progress and source anchor instead, with a legacy ratio fallback.
+        const percent = Number(state.progressPercent) || 0;
+        const ratio = Number(state.scrollRatio) || 0;
+        const hasSourceAnchor = Number(state.paragraphIndex) > 0 || Number(state.itemIndex) > 0;
+        return percent > 1
+          || (hasSourceAnchor && ratio > 0.005)
+          || (Boolean(state.focusMode) && Number(state.chapterIndex) > 0);
+      }
+      function shouldPreserveMeaningfulProgress(existingState, nextState, forceOverwrite = false) {
+        // Clicking a toolbar button near the top can scroll the page to y=0 before
+        // the click handler runs. Do not let that incidental top-of-page state erase
+        // a previously saved reading position. "Start from the beginning" is the
+        // explicit action that is allowed to overwrite it.
+        return !forceOverwrite
+          && stateHasMeaningfulProgress(existingState)
+          && !stateHasMeaningfulProgress(nextState);
+      }
+      function captureReadingState() {
+        if (!documentFingerprint || !documentParagraphs.length || reader.classList.contains('hidden')) return null;
+        const scrollY = Math.max(0, window.scrollY || document.documentElement.scrollTop || 0);
+        const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        const viewRatio = maxScroll > 0 ? Math.max(0, Math.min(1, scrollY / maxScroll)) : 0;
+        const focusMode = document.body.classList.contains('focus-mode');
+        const chapterIndex = focusMode
+          ? currentChapterIndex
+          : (hasDetectedChapters ? guessCurrentChapterFromScroll() : 0);
+        const anchorInfo = currentReadingAnchor();
+        const anchor = anchorInfo.anchor;
+        const itemIndex = anchor ? Number(anchor.dataset.readerItemIndex) || 0 : 0;
+        const paragraphIndex = anchor ? anchorInfo.paragraphIndex : null;
+        const anchorTop = anchorInfo.anchorTop;
+        const progressPercent = currentSourceProgressPercent(anchorInfo);
+        const chapterHeading = hasDetectedChapters && chapters[chapterIndex]
+          ? chapters[chapterIndex].heading : null;
+        return {
+          version: 1,
+          progressModel: READING_PROGRESS_MODEL,
+          fileName: openedFilename,
+          focusMode,
+          chapterIndex: Math.max(0, Math.min(chapterIndex, Math.max(0, chapters.length - 1))),
+          chapterNumber: chapterHeading && chapterHeading.number != null ? String(chapterHeading.number) : null,
+          chapterTitle: chapterHeading ? String(chapterHeading.title || chapterHeading.displayTitle || '') : '',
+          paragraphIndex,
+          itemIndex,
+          anchorTop,
+          scrollY,
+          scrollRatio: viewRatio,
+          progressPercent: Math.round(Math.max(0, Math.min(100, progressPercent))),
+          furthestProgressPercent: Math.round(Math.max(furthestReadPercent, progressPercent)),
+          updatedAt: Date.now()
+        };
+      }
+      function saveReadingState(options = {}) {
+        if (!documentFingerprint || resumeDialog.classList.contains('show') || focusTransitionInProgress) return;
+        const state = captureReadingState();
+        if (!state) return;
+        try {
+          const store = readProgressStore();
+          const previousState = store[documentFingerprint];
+          if (shouldPreserveMeaningfulProgress(previousState, state, Boolean(options.forceOverwrite))) return;
+          if (options.forceOverwrite) {
+            state.furthestProgressPercent = Math.round(clampPercent(state.progressPercent));
+            furthestReadPercent = state.furthestProgressPercent;
+            lastProgressMilestone = Math.floor(furthestReadPercent / 10) * 10;
+          } else {
+            // Do not carry forward old scroll-height percentages: they can be inflated
+            // by reading the same chapter in both Normal and Focus modes. Legacy saved
+            // positions are retained, but their percent is recomputed from source text.
+            const previousCanonical = previousState && previousState.progressModel === READING_PROGRESS_MODEL
+              ? Number(previousState.furthestProgressPercent) || 0 : 0;
+            state.furthestProgressPercent = Math.round(Math.max(
+              previousCanonical,
+              furthestReadPercent,
+              Number(state.progressPercent) || 0
+            ));
+            furthestReadPercent = state.furthestProgressPercent;
+          }
+          store[documentFingerprint] = state;
+          const recent = Object.entries(store)
+            .filter(([, value]) => value && typeof value.updatedAt === 'number')
+            .sort((a, b) => b[1].updatedAt - a[1].updatedAt)
+            .slice(0, MAX_SAVED_BOOKS);
+          localStorage.setItem(READING_PROGRESS_KEY, JSON.stringify(Object.fromEntries(recent)));
+        } catch (_) {
+          // A full or disabled browser storage area should never interrupt reading.
+        }
+      }
+      function scheduleReadingSave() {
+        if (!documentFingerprint || resumeDialog.classList.contains('show') || focusTransitionInProgress) return;
+        if (saveProgressTimer) clearTimeout(saveProgressTimer);
+        saveProgressTimer = setTimeout(() => {
+          saveProgressTimer = null;
+          saveReadingState();
+        }, 450);
+      }
+      function normalizedResumeTitle(value) {
+        return String(value || '').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+      }
+      function resolveSavedChapterIndex(state) {
+        if (!chapters.length) return 0;
+        // Old Focus-mode saves used paragraph indices from a filtered chapter-local
+        // array. The chapter number/title is more trustworthy for those legacy records.
+        if (state && state.focusMode && state.progressModel !== READING_PROGRESS_MODEL) {
+          const legacyNumber = state.chapterNumber != null ? String(state.chapterNumber) : '';
+          const legacyTitle = normalizedResumeTitle(state.chapterTitle);
+          if (legacyNumber || legacyTitle) {
+            const identityMatches = chapters.map((chapter, index) => ({ chapter, index }))
+              .filter(item => !legacyNumber || String((item.chapter.heading || {}).number || '') === legacyNumber);
+            const exact = identityMatches.find(item => legacyTitle && normalizedResumeTitle((item.chapter.heading || {}).title || (item.chapter.heading || {}).displayTitle) === legacyTitle);
+            if (exact) return exact.index;
+            if (identityMatches.length === 1) return identityMatches[0].index;
+            if (legacyTitle) {
+              const titleMatch = chapters.findIndex(chapter => normalizedResumeTitle((chapter.heading || {}).title || (chapter.heading || {}).displayTitle) === legacyTitle);
+              if (titleMatch >= 0) return titleMatch;
+            }
+          }
+        }
+        // Prefer the saved source-paragraph index in current records. It survives
+        // changes to chapter detection, unlike an index into the chapter array.
+        if (state && state.paragraphIndex != null) {
+          const sourceIndex = Number(state.paragraphIndex);
+          if (Number.isInteger(sourceIndex) && sourceIndex >= 0) {
+            const byParagraph = chapters.findIndex(chapter => sourceIndex >= chapter.start && sourceIndex < chapter.end);
+            if (byParagraph >= 0) return byParagraph;
+          }
+        }
+        const savedNumber = state && state.chapterNumber != null ? String(state.chapterNumber) : '';
+        const savedTitle = normalizedResumeTitle(state && state.chapterTitle);
+        if (savedNumber) {
+          const matches = chapters.map((chapter, index) => ({ chapter, index }))
+            .filter(item => String((item.chapter.heading || {}).number || '') === savedNumber);
+          if (savedTitle) {
+            const exact = matches.find(item => normalizedResumeTitle((item.chapter.heading || {}).title || (item.chapter.heading || {}).displayTitle) === savedTitle);
+            if (exact) return exact.index;
+          }
+          if (matches.length === 1) return matches[0].index;
+        }
+        if (savedTitle) {
+          const byTitle = chapters.findIndex(chapter => normalizedResumeTitle((chapter.heading || {}).title || (chapter.heading || {}).displayTitle) === savedTitle);
+          if (byTitle >= 0) return byTitle;
+        }
+        return Math.max(0, Math.min(Number(state && state.chapterIndex) || 0, chapters.length - 1));
+      }
+      function resumeDescription(state) {
+        const percent = state && state.progressModel === READING_PROGRESS_MODEL
+          ? clampPercent(state.furthestProgressPercent)
+          : estimateSavedSourceProgress(state);
+        if (hasDetectedChapters && chapters.length) {
+          const index = resolveSavedChapterIndex(state);
+          const chapter = chapters[index] && chapters[index].heading;
+          if (chapter) return `${chapter.label}${chapter.displayTitle && chapter.displayTitle !== chapter.label ? ' — ' + chapter.displayTitle : ''}\nAbout ${percent}% through the document.`;
+        }
+        return `About ${percent}% through the document.`;
+      }
+      function showResumeDialog(state) {
+        pendingResumeState = state;
+        resumeDocumentName.textContent = openedFilename;
+        resumeDialogDetails.textContent = resumeDescription(state);
+        resumeDialogDetails.style.whiteSpace = 'pre-line';
+        resumeDialog.classList.add('show');
+        requestAnimationFrame(() => resumeBtn.focus());
+      }
+      function closeBookSearchDialog() {
+        bookSearchDialog.classList.remove('show');
+      }
+      function updateBookSearchResults(query) {
+        const clean = String(query || '').trim();
+        if (clean === lastSearchQuery && searchMatchCount >= 0) {
+          // Keep the current result cursor when reopening Ctrl+F with the same query.
+          return;
+        }
+        lastSearchQuery = clean;
+        searchResults = [];
+        searchMatchCount = 0;
+        searchResultCursor = -1;
+        if (clean.length < 2 || !documentParagraphs.length) {
+          bookSearchMeta.textContent = clean.length < 2 ? 'Enter at least two characters to search the full book.' : 'Open a book to search its text.';
+          previousSearchResult.disabled = true;
+          nextSearchResult.disabled = true;
+          return;
+        }
+        const needle = clean.toLocaleLowerCase();
+        const MAX_STORED_RESULTS = 2000;
+        for (let i = 0; i < documentParagraphs.length; i++) {
+          if (String(documentParagraphs[i] || '').toLocaleLowerCase().includes(needle)) {
+            searchMatchCount++;
+            if (searchResults.length < MAX_STORED_RESULTS) searchResults.push(i);
+          }
+        }
+        bookSearchMeta.textContent = searchMatchCount
+          ? `${searchMatchCount.toLocaleString()} match${searchMatchCount === 1 ? '' : 'es'} found. Search includes the entire book, even paragraphs not currently rendered.${searchMatchCount > MAX_STORED_RESULTS ? ' The first 2,000 matches are available to navigate.' : ''}`
+          : 'No matches found in this book.';
+        previousSearchResult.disabled = searchMatchCount === 0;
+        nextSearchResult.disabled = searchMatchCount === 0;
+      }
+      function openBookSearchDialog() {
+        if (!documentParagraphs.length || resumeDialog.classList.contains('show')) return;
+        bookSearchDialog.classList.add('show');
+        bookSearchInput.value = lastSearchQuery;
+        updateBookSearchResults(bookSearchInput.value);
+        requestAnimationFrame(() => { bookSearchInput.focus(); bookSearchInput.select(); });
+      }
+      function navigateBookSearch(direction = 1) {
+        if (!searchResults.length) return;
+        searchResultCursor = (searchResultCursor + direction + searchResults.length) % searchResults.length;
+        const sourceIndex = searchResults[searchResultCursor];
+        const chapterIndex = getChapterIndexForParagraph(sourceIndex);
+        if (document.body.classList.contains('focus-mode') && chapterIndex >= 0 && chapterIndex !== currentChapterIndex) {
+          currentChapterIndex = chapterIndex;
+          renderCurrentView();
+        }
+        activeSearchSourceIndex = sourceIndex;
+        let target = null;
+        if (virtualReader.active) target = ensureVirtualSourceIndex(sourceIndex);
+        else target = prose.querySelector(`[data-reader-paragraph-index="${sourceIndex}"]`);
+        if (!target) {
+          const candidates = Array.from(prose.querySelectorAll('[data-reader-paragraph-index]'));
+          target = candidates.find(node => Number(node.dataset.readerParagraphIndex) >= sourceIndex) || candidates[candidates.length - 1] || null;
+        }
+        if (!target && virtualReader.active) {
+          const mapped = virtualSourceIndex(sourceIndex);
+          if (mapped >= 0) {
+            renderVirtualWindow(Math.max(0, mapped - 25), Math.min(virtualReader.items.length, mapped + 40), false);
+            target = prose.querySelector(`[data-reader-paragraph-index="${sourceIndex}"]`)
+              || virtualReader.window.querySelector(`[data-reader-view-index="${mapped}"]`);
+          }
+        }
+        prose.querySelectorAll('.search-result-active').forEach(node => node.classList.remove('search-result-active'));
+        if (target) {
+          target.classList.add('search-result-active');
+          const rect = target.getBoundingClientRect();
+          const desired = Math.max(0, window.scrollY + rect.top - readingGuideY());
+          scrollInstantly(desired);
+        }
+        closeBookSearchDialog();
+        updateScrollProgress();
+        scheduleReadingSave();
+      }
+      bookSearchInput.addEventListener('input', () => updateBookSearchResults(bookSearchInput.value));
+      bookSearchInput.addEventListener('keydown', event => {
+        if (event.key === 'Enter') { event.preventDefault(); navigateBookSearch(event.shiftKey ? -1 : 1); }
+      });
+      previousSearchResult.addEventListener('click', () => navigateBookSearch(-1));
+      nextSearchResult.addEventListener('click', () => navigateBookSearch(1));
+      closeBookSearch.addEventListener('click', closeBookSearchDialog);
+      bookSearchDialog.addEventListener('keydown', event => {
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(bookSearchDialog.querySelectorAll('button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])')).filter(el => el.getClientRects().length > 0);
+        if (!focusable.length) { event.preventDefault(); return; }
+        if (event.shiftKey && document.activeElement === focusable[0]) { event.preventDefault(); focusable[focusable.length - 1].focus(); }
+        else if (!event.shiftKey && document.activeElement === focusable[focusable.length - 1]) { event.preventDefault(); focusable[0].focus(); }
+      });
+      function closeResumeDialog() {
+        resumeDialog.classList.remove('show');
+      }
+      resumeDialog.addEventListener('keydown', (event) => {
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(resumeDialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+          .filter(element => element.getClientRects().length > 0);
+        if (!focusable.length) {
+          event.preventDefault();
+          return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      });
+      function preferredScrollBehavior() {
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+      }
+      function scrollInstantly(top) {
+        virtualScrollSettleUntil = performance.now() + 120;
+        document.documentElement.classList.add('instant-scroll');
+        window.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+        requestAnimationFrame(() => document.documentElement.classList.remove('instant-scroll'));
+      }
+      function resetToBeginning() {
+        closeResumeDialog();
+        pendingResumeState = null;
+        furthestReadPercent = 0;
+        lastProgressMilestone = 0;
+        document.body.classList.remove('focus-mode');
+        currentChapterIndex = 0;
+        renderCurrentView();
+        scrollInstantly(0);
+        updateScrollProgress();
+        saveReadingState({ forceOverwrite: true });
+      }
+      function restoreReadingState(state) {
+        closeResumeDialog();
+        pendingResumeState = null;
+        document.body.classList.toggle('focus-mode', Boolean(state.focusMode));
+        currentChapterIndex = resolveSavedChapterIndex(state);
+        renderCurrentView();
+        if (virtualReader.active && state.paragraphIndex != null) ensureVirtualSourceIndex(Number(state.paragraphIndex));
+        // Wait until the restored view has layout, then place the same source-text
+        // paragraph at the same viewport offset. It remains stable if a new reader
+        // build detects a slightly different set of chapter headings.
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const isLegacyFocusState = Boolean(state.focusMode) && state.progressModel !== READING_PROGRESS_MODEL;
+          const savedParagraphIndex = state.paragraphIndex == null ? NaN : Number(state.paragraphIndex);
+          let anchor = !isLegacyFocusState && Number.isInteger(savedParagraphIndex) && savedParagraphIndex >= 0
+            ? prose.querySelector(`[data-reader-paragraph-index="${savedParagraphIndex}"]`) : null;
+          // Backward compatibility with reading positions saved by earlier builds.
+          if (!anchor && state.paragraphIndex == null && !isLegacyFocusState) {
+            const wantedIndex = Math.max(0, Number(state.itemIndex) || 0);
+            anchor = prose.querySelector(`[data-reader-item-index="${wantedIndex}"]`);
+          }
+          if (anchor) {
+            const rect = anchor.getBoundingClientRect();
+            const target = (window.scrollY || 0) + rect.top - (Number.isFinite(Number(state.anchorTop)) ? Number(state.anchorTop) : 0);
+            scrollInstantly(Math.max(0, target));
+          } else {
+            const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+            const ratio = Number.isFinite(Number(state.scrollRatio)) ? Math.max(0, Math.min(1, Number(state.scrollRatio))) : 0;
+            scrollInstantly(maxScroll * ratio);
+          }
+          updateScrollProgress();
+          saveReadingState();
+        }));
+      }
+      resumeBtn.addEventListener('click', () => {
+        if (pendingResumeState) restoreReadingState(pendingResumeState);
+      });
+      startOverBtn.addEventListener('click', resetToBeginning);
+      window.addEventListener('pagehide', saveReadingState);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') saveReadingState();
+      });
+
+      function goToChapter(index) {
+        if (!hasDetectedChapters || index < 0 || index >= chapters.length) return;
+        currentChapterIndex = index;
+        renderCurrentView();
+        window.scrollTo({ top: 0, behavior: preferredScrollBehavior() });
+        scheduleReadingSave();
+      }
+      function showProgressMilestone(percent) {
+        if (!progressToast) return;
+        progressToast.innerHTML = `<strong>${percent}% reached</strong> · Your reading progress is saved`;
+        progressToast.classList.add('show');
+        if (progressToastTimer) clearTimeout(progressToastTimer);
+        progressToastTimer = setTimeout(() => {
+          progressToast.classList.remove('show');
+          progressToastTimer = null;
+        }, 2200);
+      }
+      function updateScrollProgress() {
+        if (reader.classList.contains('hidden') || focusTransitionInProgress) return;
+        const currentPercent = currentSourceProgressPercent();
+        const previousFurthest = furthestReadPercent;
+        furthestReadPercent = Math.max(furthestReadPercent, currentPercent);
+        const displayPercent = Math.round(furthestReadPercent);
+        progressBar.style.width = displayPercent + '%';
+        readProgress.textContent = displayPercent + '% reached';
+        const milestone = Math.floor(furthestReadPercent / 10) * 10;
+        if (milestone >= 10 && milestone > lastProgressMilestone && furthestReadPercent > previousFurthest + 0.5) {
+          lastProgressMilestone = milestone;
+          showProgressMilestone(milestone);
+        }
+        scheduleReadingSave();
+      }
+      window.addEventListener('scroll', () => updateVirtualReaderWindow(false), { passive: true });
+      window.addEventListener('scroll', updateScrollProgress, { passive: true });
+      window.addEventListener('resize', updateScrollProgress);
+      window.addEventListener('resize', () => {
+        if (virtualReader.active) requestAnimationFrame(() => resetVirtualReaderEstimates());
+        refreshFocusHereTabStop();
+        if (focusHereButton.classList.contains('is-visible')) {
+          if (shouldOfferFocusHere()) positionFocusHereButton();
+          else hideFocusHereButton(true);
+        }
+      });
+      window.addEventListener('scroll', () => {
+        refreshFocusHereTabStop();
+        if (focusHereButton.classList.contains('is-visible')) {
+          if (shouldOfferFocusHere()) positionFocusHereButton();
+          else hideFocusHereButton(true);
+        }
+      }, { passive: true });
+
+      async function openFile(file) {
+        if (!file) return;
+        const hadOpenDocument = !reader.classList.contains('hidden') && documentParagraphs.length > 0;
+        if (saveProgressTimer) { clearTimeout(saveProgressTimer); saveProgressTimer = null; }
+        saveReadingState();
+        hideMessage();
+        if (!/\.(pdf|txt)$/i.test(file.name)) {
+          showMessage('Please choose a PDF or plain-text (.txt) file.', true); return;
+        }
+        if (file.size > 80 * 1024 * 1024) {
+          showMessage('This reader currently accepts files up to 80 MB. Try splitting a very large PDF first.', true); return;
+        }
+        setBusy(true);
+        statusText.textContent = 'Reading document…';
+        try {
+          let raw = '';
+          let pages = null;
+          if (/\.txt$/i.test(file.name)) {
+            raw = await file.text();
+          } else {
+            const response = await fetch('/api/extract?name=' + encodeURIComponent(file.name), {
+              method: 'POST', headers: { 'Content-Type': 'application/pdf' }, body: file
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(data.error || 'Could not extract text from that PDF.');
+            raw = data.text || '';
+            pages = data.pages || null;
+          }
+          const paragraphs = extractParagraphs(raw);
+          // Search hits belong to one extracted document. Never reuse old hit indexes
+          // after opening a different book, even if the search text happens to match.
+          searchResults = [];
+          searchMatchCount = 0;
+          searchResultCursor = -1;
+          lastSearchQuery = '';
+          activeSearchSourceIndex = null;
+          closeBookSearchDialog();
+          const charCount = paragraphs.reduce((sum, p) => sum + p.length, 0);
+          if (!paragraphs.length || charCount < 25) {
+            throw new Error('I couldn’t find selectable text in this file. It may be a scanned PDF made from page images. On Debian, you can make it searchable with OCRmyPDF, then open the new PDF here.');
+          }
+          openedFilename = file.name;
+          documentParagraphs = paragraphs;
+          buildSourceParagraphOffsets(documentParagraphs);
+          documentFingerprint = fingerprintDocument(documentParagraphs);
+          chapters = detectChapters(documentParagraphs);
+          hasDetectedChapters = chapters.length > 1 || Boolean(chapters[0] && chapters[0].heading);
+          currentChapterIndex = 0;
+          pendingResumeState = null;
+          document.body.classList.remove('focus-mode');
+          const savedReadingState = loadReadingState(documentFingerprint);
+          // Migrate old scroll-height based progress to source-text progress. Preserve
+          // the resume anchor, but never trust a legacy percentage that could have
+          // reached 100% solely by scrolling a single Focus-mode chapter.
+          furthestReadPercent = savedReadingState && savedReadingState.progressModel === READING_PROGRESS_MODEL
+            ? clampPercent(savedReadingState.furthestProgressPercent)
+            : estimateSavedSourceProgress(savedReadingState);
+          lastProgressMilestone = Math.floor(furthestReadPercent / 10) * 10;
+          fileNameEl.textContent = file.name;
+          fileNameEl.title = file.name;
+          fileMetaEl.textContent = [pages ? pages + ' pages' : (file.type || 'Document'), Math.max(1, Math.round(file.size / 1024)) + ' KB'].join(' · ');
+          emptyState.classList.add('hidden');
+          reader.classList.remove('hidden');
+          clearBtn.disabled = false;
+          fileFocusBtn.disabled = false;
+          focusHereButton.disabled = !(hasDetectedChapters && chapters.length > 1);
+          focusHereButton.tabIndex = -1;
+          hideFocusHereButton(true);
+          statusText.innerHTML = hasDetectedChapters
+            ? `<strong>Ready to read.</strong> Detected ${chapters.length} chapter heading${chapters.length === 1 ? '' : 's'}. Use Focus mode to jump between them.`
+            : '<strong>Ready to read.</strong> No chapter headings were detected, so Focus mode will show the whole document.';
+          renderCurrentView();
+          progressBar.style.width = Math.round(furthestReadPercent) + '%';
+          readProgress.textContent = Math.round(furthestReadPercent) + '% reached';
+          scrollInstantly(0);
+          refreshFocusHereTabStop();
+          if (stateHasMeaningfulProgress(savedReadingState)) {
+            showResumeDialog(savedReadingState);
+          } else {
+            pendingResumeState = null;
+            if (hasDetectedChapters) {
+              showMessage(`Detected ${chapters.length} chapter headings. Chapter navigation is in Focus mode. If a heading is missing, it may be formatted differently in this PDF.`);
+            } else if (pages && pages > 1) {
+              showMessage('No chapter headings were detected in this document. You can still read it continuously in Shadow Reader. If this is a novel PDF, its headings may use a different format.');
+            }
+          }
+        } catch (error) {
+          const detail = error && error.message ? error.message : 'Something went wrong while opening the document.';
+          if (hadOpenDocument) {
+            statusText.textContent = 'The previous document is still open.';
+            showMessage(`Could not open “${file.name}”. Your previous document is still open. ${detail}`, true);
+          } else {
+            statusText.textContent = 'Could not open document.';
+            showMessage(detail, true);
+          }
+        } finally {
+          setBusy(false);
+          fileInput.value = '';
+        }
+      }
+      openBtn.addEventListener('click', () => fileInput.click());
+      emptyOpenBtn.addEventListener('click', () => fileInput.click());
+      fileInput.addEventListener('change', () => openFile(fileInput.files && fileInput.files[0]));
+      clearBtn.addEventListener('click', () => {
+        saveReadingState();
+        openedFilename = '';
+        documentFingerprint = '';
+        pendingResumeState = null;
+        closeResumeDialog();
+        searchResults = []; searchMatchCount = 0; searchResultCursor = -1; lastSearchQuery = ''; activeSearchSourceIndex = null; closeBookSearchDialog();
+        documentParagraphs = [];
+        sourceParagraphOffsets = [];
+        totalSourceCharacters = 0;
+        chapters = [];
+        currentChapterIndex = 0;
+        hasDetectedChapters = false;
+        document.body.classList.remove('focus-mode');
+        fileFocusBtn.disabled = true;
+        focusHereButton.disabled = true;
+        focusHereButton.tabIndex = -1;
+        hideFocusHereButton(true);
+        fileNameEl.textContent = 'No document open';
+        fileNameEl.title = '';
+        fileMetaEl.textContent = 'Choose a text-based PDF or a .txt file';
+        reader.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        clearBtn.disabled = true;
+        prose.replaceChildren();
+        prose.classList.remove('virtualized-reader');
+        renderedReaderItems = [];
+        virtualReader.active = false; virtualReader.items = []; virtualReader.heights = []; virtualReader.heightTree = []; virtualReader.totalHeight = 0; virtualReader.top = null; virtualReader.window = null; virtualReader.bottom = null;
+        documentHeading.textContent = '';
+        readerTitle.textContent = '';
+        updateChapterControls();
+        statusText.textContent = 'Ready when you are.';
+        readProgress.textContent = '';
+        progressBar.style.width = '0%';
+        furthestReadPercent = 0;
+        lastProgressMilestone = 0;
+        hideMessage();
+        window.scrollTo({ top: 0, behavior: preferredScrollBehavior() });
+      });
+      function toggleFocus(force) {
+        const wasFocus = document.body.classList.contains('focus-mode');
+        const wasVirtualizedBefore = virtualReader.active;
+        const shouldFocus = typeof force === 'boolean' ? force : !wasFocus;
+        hideFocusHereButton(true);
+        if (!shouldFocus && wasFocus) {
+          const returnChapter = chapters[currentChapterIndex];
+          document.body.classList.remove('focus-mode');
+          renderCurrentView();
+          if (virtualReader.active && returnChapter) ensureVirtualSourceIndex(returnChapter.start);
+          const marker = returnChapter && hasDetectedChapters
+            ? prose.querySelector(`.chapter-opening[data-chapter-index="${currentChapterIndex}"]`)
+            : null;
+          const y = marker ? marker.getBoundingClientRect().top + window.scrollY - 22 : 0;
+          // A long virtualized book may need a huge document-coordinate jump to restore
+          // the chapter in Normal mode. Animate short, non-virtualized transitions, but
+          // make virtualized mode changes immediate so a long smooth scroll cannot fight
+          // the next touchpad gesture or a search/restore action.
+          if (virtualReader.active || wasVirtualizedBefore) scrollInstantly(Math.max(0, y));
+          else window.scrollTo({ top: Math.max(0, y), behavior: preferredScrollBehavior() });
+          scheduleReadingSave();
+          return;
+        }
+        if (shouldFocus && !wasFocus) currentChapterIndex = guessCurrentChapterFromScroll();
+        document.body.classList.toggle('focus-mode', shouldFocus);
+        renderCurrentView();
+        if (shouldFocus) {
+          if (wasVirtualizedBefore || virtualReader.active) scrollInstantly(0);
+          else window.scrollTo({ top: 0, behavior: preferredScrollBehavior() });
+        }
+        scheduleReadingSave();
+      }
+      $('#focusBtn').addEventListener('click', () => toggleFocus(true));
+      fileFocusBtn.addEventListener('click', () => toggleFocus(true));
+      $('#exitFocus').addEventListener('click', () => toggleFocus(false));
+      prevChapterBtn.addEventListener('click', () => goToChapter(currentChapterIndex - 1));
+      nextChapterBtn.addEventListener('click', () => goToChapter(currentChapterIndex + 1));
+      function commitChapterSearch() {
+        const query = chapterSelect.value.trim();
+        const index = matchChapterQuery(query);
+        if (index >= 0) goToChapter(index);
+        else if (query) showMessage(`No chapter matched “${query}”. Try a chapter number such as 95 or part of its title.`, true);
+      }
+      chapterSelect.addEventListener('change', commitChapterSearch);
+      chapterSelect.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') { event.preventDefault(); commitChapterSearch(); }
+      });
+      window.addEventListener('keydown', (event) => {
+        if (resumeDialog.classList.contains('show')) {
+          if (event.key === 'Escape') { event.preventDefault(); if (pendingResumeState) restoreReadingState(pendingResumeState); }
+          return;
+        }
+        if (bookSearchDialog.classList.contains('show') && event.key === 'Escape') {
+          event.preventDefault(); closeBookSearchDialog(); return;
+        }
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f' && documentParagraphs.length) {
+          event.preventDefault(); openBookSearchDialog(); return;
+        }
+        if (event.key === 'Escape') toggleFocus(false);
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'o') {
+          event.preventDefault(); fileInput.click();
+        }
+        if (document.body.classList.contains('focus-mode') && !event.ctrlKey && !event.metaKey && !event.altKey && !['INPUT', 'SELECT', 'TEXTAREA'].includes(event.target.tagName)) {
+          if (event.key === 'ArrowLeft' && !prevChapterBtn.disabled) goToChapter(currentChapterIndex - 1);
+          if (event.key === 'ArrowRight' && !nextChapterBtn.disabled) goToChapter(currentChapterIndex + 1);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

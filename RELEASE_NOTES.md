@@ -1,0 +1,35 @@
+# Shadow Reader 1.0.0 — release notes
+
+**Release date:** 27 October 2026  
+**Platform:** Debian Trixie / XFCE, Firefox-friendly local web UI
+
+## Included
+
+- Balanced chapter-heading detection with full-document regression coverage for the three validation PDFs.
+- Continue Reading with saved source-paragraph anchors and a deliberate Start from the beginning action.
+- Book-relative progress that remains consistent between Normal and Focus modes.
+- Discreet Focus Here control, keyboard accessibility, and reduced-motion support.
+- Virtualized rendering for long views and chapters, full-book search over unmounted text, and a Fenwick-tree height index.
+- Touchpad scroll fix: virtualized layout changes no longer fight normal scroll input through native scroll anchoring or routine app-issued scroll corrections.
+- Bounded local PDF extraction, input limits/timeouts, and `.txt` fallback if Poppler is unavailable.
+
+## Compatibility notes
+
+The visible application name is now **Shadow Reader**. Existing progress and preference storage keys (`quietReaderProgressV1` and `quietReaderPrefs`) are intentionally unchanged so this rebrand does not orphan saved reading positions or display preferences in the same Firefox origin. The server now prefers `SHADOW_READER_PORT`; the old `QUIET_READER_PORT` variable remains accepted as a compatibility alias. Continue to use `http://127.0.0.1:8765/` so existing origin-scoped state remains accessible.
+
+## Validation summary
+
+- Parser regression: 296 groups pass with Alice (12 chapters), Shadow Slave Volume 6 (170), and Shadow Slave Volume 7 (354).
+- Continue Reading static checks: 27 pass; browser restoration/progress tests pass against Alice.
+- Focus Here static checks: 10 pass; browser interaction tests pass against Alice.
+- Local server/API tests: 12 pass.
+- Virtualization browser tests: pass for random/deep scrolling, tail rendering, full-book search, resume, book switching, large chapter Focus Here, exit, and chapter jump.
+- Touchpad-like scroll regression: passes for an 8,000-paragraph novel under simulated 4× CPU slowdown; requested directional movement is preserved and no ordinary-scroll correction calls occur.
+- 30,000-paragraph synthetic stress run under simulated 2× CPU slowdown opened successfully and retained correct scroll direction. A 30,000-paragraph/4× trial did not complete within the automation window and is reported as inconclusive, not a pass.
+- See `benchmarks/` for the method, environment, raw observations, and limitations. See the separate Performance Benchmark PDF for charts.
+
+All browser-driven tests were run in headless Chromium. A manual native Firefox check on the target Debian laptop remains recommended because touchpad hardware/inertia and full browser-process memory were not measured in this environment.
+
+## Performance validation materials
+
+This release includes `PERFORMANCE_BENCHMARK.pdf` and the `benchmarks/` directory with raw CSV results, test environment/source hashes, chart images, methods/limitations, and a reproducible Playwright benchmark harness. Performance claims are explicitly limited to the measured headless Chromium environment; native Firefox/touchpad performance on the target laptop still requires a local run.
