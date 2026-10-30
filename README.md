@@ -2,9 +2,10 @@
 
 **A local, distraction-free reader for long novels and text-based PDFs.** Shadow Reader reflows selectable PDF text into a comfortable reading layout, detects chapter headings, and provides Normal and Focus reading modes. It is designed for long books and keeps your reading progress on your own computer.
 
-> **Quick download — Debian 13 (Trixie):** [Download Shadow Reader 1.0.0 (.zip)](https://github.com/OWNER/REPOSITORY/releases/latest/download/Shadow-Reader-Debian-Trixie-1.0.0.zip)
+> **Quick download — Debian 13 (Trixie):** [Download Shadow Reader](https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-1.0.0.zip)
+
 >
-> **Before publishing this README:** replace `OWNER/REPOSITORY` in the URL with your GitHub account or organization and repository name. Upload the application archive as a GitHub Release asset named exactly `Shadow-Reader-Debian-Trixie-1.0.0.zip`. This makes the link above a direct download.
+
 
 [Performance benchmark PDF](PERFORMANCE_BENCHMARK.pdf) · [Benchmark data and charts](benchmarks/) · [Testing instructions](tests/TESTING.md) · [Release notes](RELEASE_NOTES.md) · [Engineering reports](docs/reports/README.md)
 
@@ -72,7 +73,7 @@ It does **not** install Python packages, Node.js, Firefox, or Chromium. Installi
 
 ### Option A — Download the ready-to-run ZIP (recommended)
 
-1. Download the ZIP using the direct-download link near the top of this page. The maintainer must replace its `OWNER/REPOSITORY` placeholder and upload the named archive as a GitHub Release asset before the link will work.
+1. Download the ZIP using the direct-download link near the top of this page.
 2. Extract the ZIP. Open the extracted project directory — the directory containing `run.sh`.
 3. Open a terminal in that directory.
 4. Run:
