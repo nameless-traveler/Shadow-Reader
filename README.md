@@ -4,10 +4,16 @@
 
 > **Quick download — Debian 13 (Trixie):** [Download Shadow Reader](https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-1.0.0.zip)
 
->
+
 
 
 [Performance benchmark PDF](PERFORMANCE_BENCHMARK.pdf) · [Benchmark data and charts](benchmarks/) · [Testing instructions](tests/TESTING.md) · [Release notes](RELEASE_NOTES.md) · [Engineering reports](docs/reports/README.md)
+
+
+
+
+ [Additional engineering reports](#additional-engineering-reports)
+ [License](#license)
 
 ---
 
@@ -334,33 +340,40 @@ The following reports preserve the development and debugging history. They are o
 ## Project files
 
 ```text
-Shadow-Reader-Debian-Trixie-1.0.0/
-├── index.html                         # Reader UI and client-side reading logic
-├── server.py                          # Local-only HTTP server and PDF extraction endpoint
-├── run.sh                             # Launcher; offers Poppler installation if missing
-├── README.md                          # Beginner-friendly project and install guide
-├── RELEASE_NOTES.md                   # What's included in version 1.0.0
-├── PERFORMANCE_BENCHMARK.pdf          # Performance charts and summary
+Shadow-Reader/
+├── .gitignore
+├── LICENSE
+├── README.md
+├── RELEASE_NOTES.md
+├── PERFORMANCE_BENCHMARK.pdf
+├── index.html
+├── server.py
+├── run.sh
+│
 ├── benchmarks/
-│   ├── README.md                      # Benchmark overview and reproducibility
-│   ├── METHODS_AND_LIMITATIONS.md     # Detailed methodology and caveats
-│   ├── benchmark-results.csv          # Raw trial observations
-│   ├── environment.json               # Recorded benchmark environment
-│   ├── run_browser_benchmark.py       # Reproducible local benchmark harness
-│   └── charts/                        # Benchmark charts used in the report
+│   ├── README.md
+│   ├── METHODS_AND_LIMITATIONS.md
+│   ├── benchmark-results.csv
+│   ├── environment.json
+│   ├── run_browser_benchmark.py
+│   └── charts/
+│
 ├── docs/
 │   └── reports/
-│       ├── README.md                  # Which reports to read and why
-│       ├── review-and-test-report.md  # Overall test and hardening history
+│       ├── README.md
+│       ├── review-and-test-report.md
 │       ├── touchpad-scroll-fix-report.md
 │       └── virtualization-performance-report.md
+│
 └── tests/
-    ├── TESTING.md                     # Detailed test instructions
-    ├── parser-regression.cjs          # Chapter detection regression tests
-    ├── resume-feature-regression.cjs  # Resume/progress regression checks
+    ├── TESTING.md
+    ├── source-style-manife:st.json
+    ├── parser-regression.cjs
+    ├── resume-feature-regression.cjs
     ├── focus-here-feature-regression.cjs
     ├── server-api-regression.py
-    └── *-browser-smoke.py             # Browser interaction / stress checks
+    ├── release-branding-regression.py
+    └── browser smoke tests
 ```
 
 ## License
