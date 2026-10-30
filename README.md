@@ -11,10 +11,6 @@
 
 
 
-
- [Additional engineering reports](#additional-engineering-reports)
- [License](#license)
-
 ---
 
 ## Contents
@@ -30,6 +26,7 @@
 - [Run the test suite](#run-the-test-suite)
 - [Troubleshooting](#troubleshooting)
 - [Project files](#project-files)
+- [License](#license)
 
 ## Features
 
@@ -224,6 +221,7 @@ Keep the application runtime requirements separate from the optional test tools:
 
 - **Application target tested:** Debian GNU/Linux 13 (Trixie), using Firefox during manual use.
 - **Automated UI tests:** Debian 13 container, headless Chromium, Python Playwright. These confirm application interactions but are not equivalent to native Firefox/touchpad tests.
+- **GitHub Actions CI:** Lightweight regression tests run automatically on pushes to `main` and pull requests, using GitHub-hosted Ubuntu runners with Node.js 22 and Python 3.13. This workflow validates the regression suite but does not replace testing on the supported Debian 13 target.
 - **Benchmark measurements:** the container environment detailed above (AMD EPYC virtual CPU, 5 vCPUs, 5.8 GiB visible RAM, Chromium 144, 1366 × 768 viewport).
 - **Full-novel parser corpus:** *Alice's Adventures in Wonderland* (12 chapters), Shadow Slave Volume 6 (170 chapters), and Shadow Slave Volume 7 (354 chapters). These PDFs are test inputs and are **not included** in the source/release archive. The standard generated tests run without them; exact whole-document checks require you to supply locally owned copies and extract their text.
 
@@ -329,18 +327,15 @@ For exact test coverage, known limitations, and additional full-text test comman
 | The PDF opens but words or paragraphs are merged strangely | Shadow Reader relies on the PDF's text layout. Scanned pages, multi-column documents, missing indentation, and unusual line breaks may need OCR or preprocessing. |
 | `./run.sh` says permission denied | Run `chmod +x run.sh`, then `./run.sh`; alternatively run `sh run.sh`. |
 
-## Additional engineering reports
-
-The following reports preserve the development and debugging history. They are optional reading and are **not needed to install or use Shadow Reader**. For the main performance evidence, start with [`PERFORMANCE_BENCHMARK.pdf`](PERFORMANCE_BENCHMARK.pdf) and [`benchmarks/README.md`](benchmarks/README.md); the raw data and methodology are also included in `benchmarks/`.
-
-- [Overall review and regression history](docs/reports/review-and-test-report.md)
-- [Touchpad scrolling investigation and fix](docs/reports/touchpad-scroll-fix-report.md)
-- [Virtualization performance investigation](docs/reports/virtualization-performance-report.md)
 
 ## Project files
 
 ```text
 Shadow-Reader/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
 ├── .gitignore
 ├── LICENSE
 ├── README.md
@@ -349,7 +344,6 @@ Shadow-Reader/
 ├── index.html
 ├── server.py
 ├── run.sh
-│
 ├── benchmarks/
 │   ├── README.md
 │   ├── METHODS_AND_LIMITATIONS.md
@@ -357,6 +351,10 @@ Shadow-Reader/
 │   ├── environment.json
 │   ├── run_browser_benchmark.py
 │   └── charts/
+│       ├── opening-time.png
+│       ├── dom-footprint.png
+│       ├── process-tree-pss.png
+│       └── scroll-correctness.png
 │
 ├── docs/
 │   └── reports/
@@ -367,13 +365,17 @@ Shadow-Reader/
 │
 └── tests/
     ├── TESTING.md
-    ├── source-style-manife:st.json
+    ├── source-style-manifest.json
     ├── parser-regression.cjs
     ├── resume-feature-regression.cjs
     ├── focus-here-feature-regression.cjs
     ├── server-api-regression.py
     ├── release-branding-regression.py
-    └── browser smoke tests
+    ├── performance-browser-smoke.py
+    ├── virtualization-browser-smoke.py
+    ├── focus-here-browser-smoke.py
+    ├── resume-browser-smoke.py
+    └── touchpad-scroll-behavior.py
 ```
 
 ## License
