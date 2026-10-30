@@ -1,0 +1,45 @@
+
+name: Shadow Reader CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression-tests:
+    name: Regression Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Run parser regression tests
+        run: node tests/parser-regression.cjs
+
+      - name: Run reading progress tests
+        run: node tests/resume-feature-regression.cjs
+
+      - name: Run Focus Here tests
+        run: node tests/focus-here-feature-regression.cjs
+
+      - name: Run server API tests
+        run: python3 tests/server-api-regression.py
+
+      - name: Run release branding tests
+        run: python3 tests/release-branding-regression.py
