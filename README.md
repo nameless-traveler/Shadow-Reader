@@ -16,6 +16,7 @@
 ## Contents
 
 - [Features](#features)
+- [See Focus Here in action](#see-focus-here-in-action)
 - [Platform and dependencies](#platform-and-dependencies)
 - [Install and run](#install-and-run)
 - [Reading a book](#reading-a-book)
@@ -41,6 +42,28 @@
 - **Reader controls:** S/M/L font sizes, Tight/Normal/Loose paragraph spacing, Narrow/Medium/Wide reading widths, and Night/Sepia/Paper themes.
 - **Accessibility:** keyboard navigation in Focus mode, a keyboard-accessible Focus Here control when relevant, a keyboard-contained resume prompt, and respect for reduced-motion preferences.
 - **Local processing:** PDF text extraction and reading take place on your computer. There are no analytics or third-party requests.
+
+## See Focus Here in action
+
+Shadow Reader provides a continuous reading experience in Normal mode and a chapter-by-chapter experience in Focus mode. You can switch directly from your current reading position without having to restart the chapter.
+
+### 1. Normal mode
+
+Read the entire book as one continuous document. While reading, move your pointer toward the right-side margin beside the reading guide to reveal the Focus Here control.
+
+![Shadow Reader in Normal mode](docs/screenshots/01-normal-mode.png)
+
+### 2. Reveal Focus Here
+
+When the control appears, click the small open-book icon to open the current passage in Focus mode.
+
+![Focus Here control revealed on hover](docs/screenshots/02-focus-here-hover.png)
+
+### 3. Focus mode
+
+Focus mode presents the detected chapter with dedicated navigation controls. Move between chapters using Previous and Next, jump directly using the chapter selector, or press Esc to return to Normal mode.
+
+![Shadow Reader in Focus mode](docs/screenshots/03-focus-mode.png)
 
 ## Platform and dependencies
 
@@ -357,11 +380,16 @@ Shadow-Reader/
 │       └── scroll-correctness.png
 │
 ├── docs/
-│   └── reports/
-│       ├── README.md
-│       ├── review-and-test-report.md
-│       ├── touchpad-scroll-fix-report.md
-│       └── virtualization-performance-report.md
+│   ├── reports/
+│   │   ├── README.md
+│   │   ├── review-and-test-report.md
+│   │   ├── touchpad-scroll-fix-report.md
+│   │   └── virtualization-performance-report.md
+│   │
+│   └── screenshots/
+│       ├── 01-normal-mode.png
+│       ├── 02-focus-here-hover.png
+│       └── 03-focus-mode.png
 │
 └── tests/
     ├── TESTING.md
