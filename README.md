@@ -1,13 +1,33 @@
-# Shadow Reader
+<div align="center">
+  <img src="assets/shadow-reader-logo.png" alt="Shadow Reader: an open book accompanied by a flowing shadow" width="220">
+  <h1>Shadow Reader</h1>
+  <p><strong><em>An invaluable companion on your reading journey.</em></strong></p>
+  <p><strong>Not a reflection. Not an imitation. A companion.</strong><br>
+  A presence that follows, helps, remembers and stays.</p>
+  <p>A calm, private reading space for long novels and text-based PDFs.<br>
+  Settle into the story, move between chapters, and pick up where you left off.</p>
+  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-1.0.0.zip"><strong>↓ Download for Debian 13 (Trixie)</strong></a></p>
+  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases">Releases</a> · <a href="#install-and-run">Get started</a> · <a href="#features">Explore features</a></p>
+</div>
+
+<p align="center">
+  <a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/nameless-traveler/Shadow-Reader?color=c6b18a&label=latest%20release"></a>
+  <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-c6b18a"></a>
+  <img alt="Platform: Debian 13" src="https://img.shields.io/badge/platform-Debian%2013-a89acb">
+</p>
+
+---
+
+## Why Shadow Reader
 
 **A local, distraction-free reader for long novels and text-based PDFs.** Shadow Reader reflows selectable PDF text into a comfortable reading layout, detects chapter headings, and provides Normal and Focus reading modes. It is designed for long books and keeps your reading progress on your own computer.
 
-> **Quick download — Debian 13 (Trixie):** [Download Shadow Reader](https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-1.0.0.zip)
+Explore [features](#features), [installation](#install-and-run), [performance](#performance-benchmarks), [testing](tests/TESTING.md), [release notes](RELEASE_NOTES.md), and [engineering reports](docs/reports/README.md).
 
 
 
 
-[Performance benchmark PDF](PERFORMANCE_BENCHMARK.pdf) · [Benchmark data and charts](benchmarks/) · [Testing instructions](tests/TESTING.md) · [Release notes](RELEASE_NOTES.md) · [Engineering reports](docs/reports/README.md)
+[Performance report](PERFORMANCE_BENCHMARK.pdf) · [Benchmark data and charts](benchmarks/) · [Additional reports](docs/reports/README.md)
 
 
 
@@ -364,6 +384,8 @@ Shadow-Reader/
 ├── README.md
 ├── RELEASE_NOTES.md
 ├── PERFORMANCE_BENCHMARK.pdf
+├── assets/
+│   └── shadow-reader-logo.png
 ├── index.html
 ├── server.py
 ├── run.sh
