@@ -92,6 +92,14 @@ class Handler(BaseHTTPRequestHandler):
                 return
             self._send(200, data, "text/html; charset=utf-8")
             return
+        if route == "/assets/shadow-reader-logo.png":
+            try:
+                data = (APP_DIR / "assets" / "shadow-reader-logo.png").read_bytes()
+            except OSError:
+                self._send(404, b"Shadow Reader logo was not found.")
+                return
+            self._send(200, data, "image/png")
+            return
         if route == "/api/health":
             self._json(200, {"ok": True, "extractor": shutil.which("pdftotext") is not None})
             return

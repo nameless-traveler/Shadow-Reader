@@ -9,14 +9,14 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #111315;
+      --bg: #101014;
       --surface: #191c20;
       --surface-2: #202429;
       --border: #2b3036;
       --text: #d8d9d6;
       --muted: #9299a1;
       --heading: #f0efeb;
-      --accent: #c6b18a;
+      --accent: #d4b98d;
       --accent-ink: #1d1a14;
       --reader-width: 760px;
       --reader-size: 19px;
@@ -62,15 +62,17 @@
     .shell { max-width: 1120px; margin: 0 auto; padding: 30px 26px 60px; }
     .masthead { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom: 42px; }
     .brand { display:flex; align-items:center; gap:12px; min-width:0; }
-    .brand-mark { display:grid; place-items:center; width:38px; height:38px; flex:none; color:var(--accent); border:1px solid var(--border); border-radius:50%; background:var(--surface); font-size:20px; }
+    .brand-mark { display:block; width:42px; height:42px; flex:none; object-fit:cover; border:1px solid color-mix(in srgb, var(--accent) 32%, var(--border)); border-radius:12px; background:var(--surface); box-shadow:0 5px 18px rgba(0,0,0,.22); }
     .brand-name { color:var(--heading); font-family:var(--reader-font); font-size:18px; letter-spacing:.015em; }
     .brand-sub { color:var(--muted); font-size:11px; letter-spacing:.13em; text-transform:uppercase; margin-top:3px; }
     .privacy { display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.11em; white-space:nowrap; }
     .privacy-dot { width:7px; height:7px; border-radius:50%; background:#7eab85; box-shadow:0 0 0 4px color-mix(in srgb, #7eab85 13%, transparent); }
-    .intro { text-align:center; max-width:690px; margin:0 auto 29px; }
-    .eyebrow { font-size:11px; line-height:1.4; color:var(--accent); text-transform:uppercase; letter-spacing:.18em; margin-bottom:14px; }
-    h1 { margin:0; color:var(--heading); font-family:var(--reader-font); font-weight:400; font-size:clamp(31px, 4vw, 43px); line-height:1.2; letter-spacing:-.035em; }
-    .intro p { max-width:520px; color:var(--muted); font-size:14px; line-height:1.8; margin:14px auto 0; }
+    .intro { position:relative; text-align:center; max-width:790px; margin:0 auto 38px; padding:5px 20px 0; }
+    .eyebrow { font-size:10px; line-height:1.5; color:var(--accent); text-transform:uppercase; letter-spacing:.23em; margin-bottom:15px; }
+    h1 { margin:0; color:var(--heading); font-family:var(--reader-font); font-weight:400; font-size:clamp(36px, 5.4vw, 58px); line-height:1.12; letter-spacing:-.045em; text-wrap:balance; }
+    .intro p { max-width:560px; color:var(--muted); font-size:13px; line-height:1.8; margin:15px auto 0; }
+    .intro .intro-manifesto { color:var(--heading); font-family:var(--reader-font); font-size:clamp(16px, 2vw, 19px); line-height:1.65; }
+    .intro-manifesto strong { color:var(--accent); font-weight:400; }
     .workspace { max-width:990px; margin:0 auto; }
     .filebar { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:15px 17px; background:var(--surface); border:1px solid var(--border); border-radius:14px 14px 0 0; }
     .file-info { min-width:0; display:flex; align-items:center; gap:12px; }
@@ -241,16 +243,17 @@
   <main class="shell" id="appShell">
     <header class="masthead">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true">☾</div>
-        <div><div class="brand-name">Shadow Reader</div><div class="brand-sub">A little room to read</div></div>
+        <img class="brand-mark" src="assets/shadow-reader-logo.png" alt="">
+        <div><div class="brand-name">Shadow Reader</div><div class="brand-sub">A companion for the journey</div></div>
       </div>
       <div class="privacy"><span class="privacy-dot"></span> Local & private</div>
     </header>
 
     <section class="intro" id="intro">
-      <div class="eyebrow">Your reading space</div>
-      <h1>Settle into the story.</h1>
-      <p>A calm, reflowable reading view for your PDFs. Choose the text size, breathing room, and page width that feel right to you.</p>
+      <div class="eyebrow">A quiet presence beside every page</div>
+      <h1>An invaluable companion<br>on your reading journey.</h1>
+      <p class="intro-manifesto"><strong>Not a reflection. Not an imitation. A companion.</strong><br>A presence that follows, helps, remembers and stays.</p>
+      <p>A private, reflowable reading space for your books. Find your place, settle into the story, and make the page feel like yours.</p>
     </section>
 
     <section class="workspace" aria-label="PDF reader controls">
