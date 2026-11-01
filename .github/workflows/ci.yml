@@ -14,6 +14,7 @@ jobs:
   regression-tests:
     name: Regression Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -29,6 +30,11 @@ jobs:
         with:
           python-version: "3.13"
 
+      - name: Install Poppler (real pdftotext)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y poppler-utils
+
       - name: Run parser regression tests
         run: node tests/parser-regression.cjs
 
@@ -43,3 +49,44 @@ jobs:
 
       - name: Run release branding tests
         run: python3 tests/release-branding-regression.py
+
+      - name: Run real PDF extraction test (real Poppler)
+        run: python3 tests/real-pdf-extraction.py
+ 
+      - name: Run logo route tests
+        run: python3 tests/logo-route-regression.py
+ 
+  browser-tests:
+    name: Browser smoke tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+ 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+ 
+      - name: Install Playwright and Chromium
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+ 
+      - name: Performance smoke test
+        run: python3 tests/performance-browser-smoke.py
+ 
+      - name: Virtualization smoke test
+        run: python3 tests/virtualization-browser-smoke.py
+ 
+      - name: Focus Here smoke test
+        run: python3 tests/focus-here-browser-smoke.py
+ 
+      - name: Continue Reading smoke test
+        run: python3 tests/resume-browser-smoke.py
+ 
+      - name: Touchpad scroll regression
+        run: python3 tests/touchpad-scroll-behavior.py
+ 

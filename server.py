@@ -68,13 +68,13 @@ class Handler(BaseHTTPRequestHandler):
         if args and str(args[1:]).startswith("('GET', '/api"):
             super().log_message(fmt, *args)
 
-    def _send(self, status: int, body: bytes, content_type: str = "text/plain; charset=utf-8") -> None:
+    def _send(self, status: int, body: bytes, content_type: str = "text/plain; charset=utf-8",cache_control: str = "no-store") -> None:
         self.close_connection = True
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Cache-Control", "no-store")
+        self.send_header("Cache-Control", cache_control)
         self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(body)
@@ -98,7 +98,7 @@ class Handler(BaseHTTPRequestHandler):
             except OSError:
                 self._send(404, b"Shadow Reader logo was not found.")
                 return
-            self._send(200, data, "image/png")
+            self._send(200, data, "image/png", "public, max-age=86400")
             return
         if route == "/api/health":
             self._json(200, {"ok": True, "extractor": shutil.which("pdftotext") is not None})
