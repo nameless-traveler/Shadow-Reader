@@ -51,4 +51,4 @@ The script records open-to-readable time, child-element and paragraph counts, pr
 
 ## Release branding and compatibility
 
-The product name in the UI is now **Shadow Reader**. Existing localStorage keys (`quietReaderProgressV1` and `quietReaderPrefs`) are intentionally unchanged to preserve user state. `SHADOW_READER_PORT` is the preferred environment variable; the previous `QUIET_READER_PORT` remains accepted as a fallback. The environment/source hashes are recorded in `environment.json`.
+The product name in the UI is **Shadow Reader**. `SHADOW_READER_PORT` sets the server port. The environment/source hashes are recorded in `environment.json`.

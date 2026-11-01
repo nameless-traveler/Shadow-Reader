@@ -100,7 +100,7 @@ def main() -> int:
         # Simulate reaching roughly 40% in Normal mode.
         page.evaluate("document.documentElement.classList.add('instant-scroll'); const max = document.documentElement.scrollHeight - window.innerHeight; window.scrollTo({top: Math.max(6000, max * 0.40), behavior: 'auto'}); window.dispatchEvent(new Event('scroll'));")
         page.wait_for_timeout(800)
-        normal_state_raw = page.evaluate("localStorage.getItem('quietReaderProgressV1')")
+        normal_state_raw = page.evaluate("localStorage.getItem('shadowReaderProgressV1')")
         normal_store = json.loads(normal_state_raw or "{}")
         normal_key = next(iter(normal_store), "")
         normal_state = normal_store.get(normal_key, {})
@@ -114,7 +114,7 @@ def main() -> int:
         # chapter. The percent must stay anchored to original-book text position,
         # not add the chapter's local scroll ratio to the previous Normal percent.
         target_info = page.evaluate("""() => {
-          const stateStore = JSON.parse(localStorage.getItem('quietReaderProgressV1') || '{}');
+          const stateStore = JSON.parse(localStorage.getItem('shadowReaderProgressV1') || '{}');
           const key = Object.keys(stateStore)[0]; const state = stateStore[key] || {};
           const markers = Array.from(document.querySelectorAll('.chapter-opening[data-chapter-index][data-reader-paragraph-index]'));
           let targetChapter = 0;
@@ -154,12 +154,12 @@ def main() -> int:
             if not positioned:
                 failures.append(f'could not revisit original source paragraph {paragraph_index} in Focus mode')
         page.wait_for_timeout(800)
-        focus_same_point = round(float(page.evaluate("JSON.parse(localStorage.getItem('quietReaderProgressV1') || '{}')[Object.keys(JSON.parse(localStorage.getItem('quietReaderProgressV1') || '{}'))[0]].furthestProgressPercent || 0")))
+        focus_same_point = round(float(page.evaluate("JSON.parse(localStorage.getItem('shadowReaderProgressV1') || '{}')[Object.keys(JSON.parse(localStorage.getItem('shadowReaderProgressV1') || '{}'))[0]].furthestProgressPercent || 0")))
         if focus_same_point > normal_furthest + 5:
             failures.append(f"revisiting the same passage inflated progress from {normal_furthest}% to {focus_same_point}% in Focus mode")
         page.evaluate("const max = document.documentElement.scrollHeight - window.innerHeight; window.scrollTo({top: max, behavior: 'auto'}); window.dispatchEvent(new Event('scroll'))")
         page.wait_for_timeout(850)
-        end_of_focus_chapter = round(float(page.evaluate("JSON.parse(localStorage.getItem('quietReaderProgressV1') || '{}')[Object.keys(JSON.parse(localStorage.getItem('quietReaderProgressV1') || '{}'))[0]].furthestProgressPercent || 0")))
+        end_of_focus_chapter = round(float(page.evaluate("JSON.parse(localStorage.getItem('shadowReaderProgressV1') || '{}')[Object.keys(JSON.parse(localStorage.getItem('shadowReaderProgressV1') || '{}'))[0]].furthestProgressPercent || 0")))
         if end_of_focus_chapter > normal_furthest + 18 or end_of_focus_chapter >= 80:
             failures.append(f"scrolling to the end of one Focus-mode chapter incorrectly looks like whole-book progress: started {normal_furthest}%, now {end_of_focus_chapter}%")
         # Return to Normal mode so the regular open-file/resume path can be tested too.
@@ -168,7 +168,7 @@ def main() -> int:
 
         # pagehide runs synchronously in browsers when the tab/window is left.
         page.evaluate("window.dispatchEvent(new Event('pagehide'))")
-        saved_raw = page.evaluate("localStorage.getItem('quietReaderProgressV1')")
+        saved_raw = page.evaluate("localStorage.getItem('shadowReaderProgressV1')")
         saved_store = json.loads(saved_raw or "{}")
         saved_state = saved_store.get(next(iter(saved_store), ""), {})
         if int(saved_state.get("scrollY", 0)) < 1000:
@@ -190,7 +190,7 @@ def main() -> int:
         chooser_info.value.set_files(file_payload)
         page.wait_for_timeout(900)
         dialog_class = page.locator("#resumeDialog").get_attribute("class") or ""
-        after_raw = page.evaluate("localStorage.getItem('quietReaderProgressV1')")
+        after_raw = page.evaluate("localStorage.getItem('shadowReaderProgressV1')")
         after_store = json.loads(after_raw or "{}")
         after_state = after_store.get(next(iter(after_store), ""), {})
         if "show" not in dialog_class.split():
@@ -214,7 +214,7 @@ def main() -> int:
             page.locator('#clearBtn').click()
             page.wait_for_timeout(200)
             legacy_payload = page.evaluate("""() => {
-              const store = JSON.parse(localStorage.getItem('quietReaderProgressV1') || '{}');
+              const store = JSON.parse(localStorage.getItem('shadowReaderProgressV1') || '{}');
               const key = Object.keys(store)[0];
               const state = store[key];
               if (!state) return null;
@@ -224,7 +224,7 @@ def main() -> int:
               state.furthestProgressPercent = 100;
               state.progressPercent = 100;
               store[key] = state;
-              localStorage.setItem('quietReaderProgressV1', JSON.stringify(store));
+              localStorage.setItem('shadowReaderProgressV1', JSON.stringify(store));
               return { key, paragraphIndex: state.paragraphIndex };
             }""")
             page.locator('#fileInput').set_input_files(file_payload)
@@ -238,7 +238,7 @@ def main() -> int:
             if 'show' in migration_dialog.split():
                 page.locator('#resumeBtn').click()
                 page.wait_for_timeout(650)
-                migrated_store = json.loads(page.evaluate("localStorage.getItem('quietReaderProgressV1')") or '{}')
+                migrated_store = json.loads(page.evaluate("localStorage.getItem('shadowReaderProgressV1')") or '{}')
                 migrated_state = migrated_store.get(legacy_payload['key'] if legacy_payload else next(iter(migrated_store), ''), {})
                 if migrated_state.get('progressModel') != 'source-text-v2':
                     failures.append('legacy reading progress was not rewritten using source-text-v2 after restoration')
@@ -266,13 +266,13 @@ def main() -> int:
                 last_focus_id = page.evaluate("document.activeElement && document.activeElement.id")
                 if first_focus_id != "startOverBtn" or last_focus_id != "resumeBtn":
                     failures.append(f"resume dialog did not trap keyboard focus correctly: Tab={first_focus_id!r}, Shift+Tab={last_focus_id!r}")
-                before_escape = json.loads(page.evaluate("localStorage.getItem('quietReaderProgressV1')") or "{}")
+                before_escape = json.loads(page.evaluate("localStorage.getItem('shadowReaderProgressV1')") or "{}")
                 before_escape_state = before_escape.get(legacy_payload['key'] if legacy_payload else next(iter(before_escape), ''), {})
                 page.keyboard.press("Escape")
                 page.wait_for_timeout(700)
                 after_escape_dialog = page.locator("#resumeDialog").get_attribute("class") or ""
                 escaped_y = page.evaluate("window.scrollY")
-                after_escape = json.loads(page.evaluate("localStorage.getItem('quietReaderProgressV1')") or "{}")
+                after_escape = json.loads(page.evaluate("localStorage.getItem('shadowReaderProgressV1')") or "{}")
                 after_escape_state = after_escape.get(legacy_payload['key'] if legacy_payload else next(iter(after_escape), ''), {})
                 if "show" in after_escape_dialog.split():
                     failures.append("Escape did not resolve the resume dialog")
@@ -292,7 +292,7 @@ def main() -> int:
             if "show" in (page.locator("#resumeDialog").get_attribute("class") or "").split():
                 page.locator("#startOverBtn").click()
                 page.wait_for_timeout(200)
-                reset_store = json.loads(page.evaluate("localStorage.getItem('quietReaderProgressV1')") or '{}')
+                reset_store = json.loads(page.evaluate("localStorage.getItem('shadowReaderProgressV1')") or '{}')
                 reset_state = reset_store.get(legacy_payload['key'] if legacy_payload else next(iter(reset_store), ''), {})
                 if round(float(reset_state.get('furthestProgressPercent', 0))) > 2:
                     failures.append(f'Start from the beginning left a nonzero progress value: {reset_state.get("furthestProgressPercent")}%')

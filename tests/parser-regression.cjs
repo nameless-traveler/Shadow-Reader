@@ -17,7 +17,7 @@ vm.runInNewContext(html.slice(start, stop) + `\nthis.api = {
   isChapterHeadingLine, parseChapterHeading, parseSpecialSectionHeading,
   parseUnnumberedChapterCandidate, extractParagraphs, detectChapters,
   findContentsSkipIndexes, hasBodyAfterHeading
-};`, sandbox, { filename: 'quiet-reader-parser.js' });
+};`, sandbox, { filename: 'shadow-reader-parser.js' });
 const api = sandbox.api;
 let checks = 0;
 function test(name, fn) {

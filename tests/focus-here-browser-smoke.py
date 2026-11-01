@@ -120,7 +120,7 @@ def main() -> int:
           const markers = [...document.querySelectorAll('.chapter-opening[data-chapter-index][data-reader-paragraph-index]')];
           let chapterMarker = markers[0] || null;
           for (const marker of markers) { if (Number(marker.dataset.readerParagraphIndex) <= sourceIndex) chapterMarker = marker; else break; }
-          const store = JSON.parse(localStorage.getItem('quietReaderProgressV1') || '{}');
+          const store = JSON.parse(localStorage.getItem('shadowReaderProgressV1') || '{}');
           const state = store[Object.keys(store)[0]] || {};
           return { readerRight: readerRect.right, guideY, sourceIndex, fraction, targetSourceIndex, targetFraction, anchorText: anchor.textContent,
             expectedTitle: chapterMarker ? chapterMarker.querySelector('.chapter-opening-title').textContent : '',
@@ -166,7 +166,7 @@ def main() -> int:
               const exact = document.querySelector(`#prose [data-reader-paragraph-index="${targetSourceIndex}"]`);
               const title = document.querySelector('#documentHeading').textContent;
               const focus = document.body.classList.contains('focus-mode');
-              const store = JSON.parse(localStorage.getItem('quietReaderProgressV1') || '{}');
+              const store = JSON.parse(localStorage.getItem('shadowReaderProgressV1') || '{}');
               const state = store[Object.keys(store)[0]] || {};
               if (!exact) return {focus, exact:false, title, percent:Number(state.furthestProgressPercent)||0};
               const rect = exact.getBoundingClientRect();
@@ -214,23 +214,23 @@ def main() -> int:
         # Honor the OS/browser reduced-motion preference for scripted chapter and
         # mode changes, while retaining smooth scrolling for users who allow motion.
         page.evaluate("""() => {
-          window.__quietReaderScrollBehaviors = [];
+          window.__shadowReaderScrollBehaviors = [];
           const originalScrollTo = window.scrollTo.bind(window);
           window.scrollTo = function (options, y) {
-            if (options && typeof options === 'object') window.__quietReaderScrollBehaviors.push(options.behavior || 'auto');
+            if (options && typeof options === 'object') window.__shadowReaderScrollBehaviors.push(options.behavior || 'auto');
             return originalScrollTo(options, y);
           };
         }""")
         page.emulate_media(reduced_motion="reduce")
         page.locator("#fileFocusBtn").evaluate("el => el.click()")
         page.wait_for_timeout(100)
-        reduced_calls = page.evaluate("window.__quietReaderScrollBehaviors.slice()")
+        reduced_calls = page.evaluate("window.__shadowReaderScrollBehaviors.slice()")
         if "auto" not in reduced_calls:
             failures.append(f"reduced-motion preference did not switch scripted scrolling to auto: {reduced_calls!r}")
         page.emulate_media(reduced_motion="no-preference")
         page.locator("#exitFocus").click(timeout=10_000)
         page.wait_for_timeout(150)
-        normal_calls = page.evaluate("window.__quietReaderScrollBehaviors.slice()")
+        normal_calls = page.evaluate("window.__shadowReaderScrollBehaviors.slice()")
         if "smooth" not in normal_calls:
             failures.append(f"normal motion preference did not retain smooth scrolling: {normal_calls!r}")
 

@@ -168,7 +168,7 @@ Use a different port, for example:
 SHADOW_READER_PORT=8766 ./run.sh
 ```
 
-The default port is `8765`. The older `QUIET_READER_PORT` environment variable is still accepted for compatibility, but `SHADOW_READER_PORT` takes precedence.
+The default port is `8765`; set `SHADOW_READER_PORT` to change it.
 
 ## Reading a book
 

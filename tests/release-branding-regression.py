@@ -13,18 +13,28 @@ checks = []
 checks.append(("document title uses Shadow Reader", "<title>Shadow Reader — local novel reader</title>" in index))
 checks.append(("visible brand uses Shadow Reader", 'class="brand-name">Shadow Reader</div>' in index))
 checks.append(("no old product name remains in app UI", "Quiet Reader" not in index and "Quiet reader" not in index))
-checks.append(("progress storage key preserved for existing saves", "'quietReaderProgressV1'" in index))
-checks.append(("preferences storage key preserved", "'quietReaderPrefs'" in index))
+checks.append(("progress storage key uses the Shadow Reader name", "'shadowReaderProgressV1'" in index))
+checks.append(("preferences storage key uses the Shadow Reader name", "'shadowReaderPrefs'" in index))
 checks.append(("new port variable documented", "SHADOW_READER_PORT=8766 ./run.sh" in readme))
-checks.append(("legacy port variable documented", "QUIET_READER_PORT" in readme))
-checks.append(("new port variable has precedence", 'os.environ.get("SHADOW_READER_PORT", os.environ.get("QUIET_READER_PORT", "8765"))' in server))
+checks.append(("port is configured by SHADOW_READER_PORT", 'os.environ.get("SHADOW_READER_PORT", "8765")' in server))
 # Verify import-time configuration in isolated interpreters without opening a socket.
-for var, value, expected in [("SHADOW_READER_PORT", "8766", "8766"), ("QUIET_READER_PORT", "8767", "8767")]:
+for var, value, expected in [("SHADOW_READER_PORT", "8766", "8766")]:
     env = os.environ.copy()
-    env.pop("SHADOW_READER_PORT", None); env.pop("QUIET_READER_PORT", None)
+    env.pop("SHADOW_READER_PORT", None)
     env[var] = value
     proc = subprocess.run([sys.executable, "-c", "import server; print(server.PORT)"], cwd=ROOT, env=env, capture_output=True, text=True)
     checks.append((f"{var} configures the requested port", proc.returncode == 0 and proc.stdout.strip().endswith(expected)))
+import re
+OLD = re.compile(r"quiet[-_ ]?reader", re.I)
+leftovers = []
+for path in ROOT.rglob("*"):
+    if path.is_file() and path.suffix in {".py", ".cjs", ".js", ".html", ".md", ".sh", ".yml", ".json"} \
+            and ".git" not in path.parts and "__pycache__" not in path.parts and path != Path(__file__).resolve():
+        if OLD.search(path.read_text(encoding="utf-8", errors="ignore")):
+            leftovers.append(str(path.relative_to(ROOT)))
+checks.append(("no old product name anywhere in the repository", not leftovers))
+if leftovers:
+    print("Old name still present in: " + ", ".join(leftovers))
 failed = [name for name, ok in checks if not ok]
 for name, ok in checks:
     print(("PASS" if ok else "FAIL") + ": " + name)

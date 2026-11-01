@@ -448,7 +448,7 @@
       let settings = { font: 'medium', spacing: 'normal', width: 'medium', theme: 'night' };
 
       try {
-        const saved = JSON.parse(localStorage.getItem('quietReaderPrefs') || '{}');
+        const saved = JSON.parse(localStorage.getItem('shadowReaderPrefs') || '{}');
         for (const key of Object.keys(settings)) if (saved[key] && isValidSetting(key, saved[key])) settings[key] = saved[key];
       } catch (_) {}
 
@@ -460,7 +460,7 @@
         return allowed[group] && allowed[group].includes(value);
       }
       function saveSettings() {
-        try { localStorage.setItem('quietReaderPrefs', JSON.stringify(settings)); } catch (_) {}
+        try { localStorage.setItem('shadowReaderPrefs', JSON.stringify(settings)); } catch (_) {}
       }
       function applySettings() {
         const root = document.documentElement;
@@ -1631,7 +1631,7 @@
         // estimate until the actual restored anchor can be measured in the DOM.
         return clampPercent(state.progressPercent);
       }
-      const READING_PROGRESS_KEY = 'quietReaderProgressV1';
+      const READING_PROGRESS_KEY = 'shadowReaderProgressV1';
       const READING_PROGRESS_MODEL = 'source-text-v2';
       const MAX_SAVED_BOOKS = 40;
       function fingerprintDocument(paragraphs) {

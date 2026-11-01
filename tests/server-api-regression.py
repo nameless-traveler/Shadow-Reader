@@ -20,7 +20,7 @@ FAKE_EXTRACTOR = r'''#!/usr/bin/env python3
 import os
 import sys
 import time
-mode = os.environ.get("QUIET_READER_TEST_EXTRACTOR_MODE", "ok")
+mode = os.environ.get("SHADOW_READER_TEST_EXTRACTOR_MODE", "ok")
 if mode == "ok":
     sys.stdout.buffer.write(b"Book title\fChapter 1: Start\nFirst paragraph.\fChapter 2: End\nLast paragraph.")
 elif mode == "large":
@@ -63,13 +63,13 @@ def main() -> int:
     original_poll = server.EXTRACTION_POLL_INTERVAL_SECONDS
     original_upload_timeout = server.UPLOAD_READ_TIMEOUT_SECONDS
 
-    with tempfile.TemporaryDirectory(prefix="quiet-reader-api-test-") as temp_dir:
+    with tempfile.TemporaryDirectory(prefix="shadow-reader-api-test-") as temp_dir:
         extractor_dir = Path(temp_dir)
         extractor = extractor_dir / "pdftotext"
         extractor.write_text(FAKE_EXTRACTOR, encoding="utf-8")
         extractor.chmod(0o755)
         os.environ["PATH"] = str(extractor_dir) + os.pathsep + original_path
-        os.environ["QUIET_READER_TEST_EXTRACTOR_MODE"] = "ok"
+        os.environ["SHADOW_READER_TEST_EXTRACTOR_MODE"] = "ok"
         server.EXTRACTION_POLL_INTERVAL_SECONDS = 0.01
         httpd = ThreadingHTTPServer(("127.0.0.1", 0), server.Handler)
         httpd.daemon_threads = True
@@ -128,14 +128,14 @@ def main() -> int:
             else:
                 failures.append(f"oversized upload returned {too_big_status}: {body[:200]!r}")
 
-            os.environ["QUIET_READER_TEST_EXTRACTOR_MODE"] = "password"
+            os.environ["SHADOW_READER_TEST_EXTRACTOR_MODE"] = "password"
             status, password = request(port, "POST", "/api/extract", b"%PDF-fixture")
             if status == 422 and "password-protected" in password.get("error", ""):
                 passed.append("password-protected PDF errors are translated into a useful message")
             else:
                 failures.append(f"password failure returned {status}: {password!r}")
 
-            os.environ["QUIET_READER_TEST_EXTRACTOR_MODE"] = "large"
+            os.environ["SHADOW_READER_TEST_EXTRACTOR_MODE"] = "large"
             started = time.monotonic()
             status, large = request(port, "POST", "/api/extract", b"%PDF-fixture")
             elapsed = time.monotonic() - started
@@ -144,7 +144,7 @@ def main() -> int:
             else:
                 failures.append(f"large extraction returned {status} after {elapsed:.2f}s: {large!r}")
 
-            os.environ["QUIET_READER_TEST_EXTRACTOR_MODE"] = "sleep"
+            os.environ["SHADOW_READER_TEST_EXTRACTOR_MODE"] = "sleep"
             server.EXTRACTION_TIMEOUT_SECONDS = 0.35
             started = time.monotonic()
             status, timed_out = request(port, "POST", "/api/extract", b"%PDF-fixture")
@@ -238,7 +238,7 @@ def main() -> int:
             server.EXTRACTION_POLL_INTERVAL_SECONDS = original_poll
             server.UPLOAD_READ_TIMEOUT_SECONDS = original_upload_timeout
             os.environ["PATH"] = original_path
-            os.environ.pop("QUIET_READER_TEST_EXTRACTOR_MODE", None)
+            os.environ.pop("SHADOW_READER_TEST_EXTRACTOR_MODE", None)
 
     if failures:
         print("FAIL: local server API regression test")

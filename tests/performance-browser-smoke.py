@@ -50,10 +50,10 @@ def main() -> int:
         # Count layout reads triggered by scrolling near the end. A linear scan of
         # every paragraph would exceed this threshold by an order of magnitude.
         page.evaluate("""() => {
-          window.__quietReaderRectReadCount = 0;
+          window.__shadowReaderRectReadCount = 0;
           const original = Element.prototype.getBoundingClientRect;
           Element.prototype.getBoundingClientRect = function (...args) {
-            window.__quietReaderRectReadCount++;
+            window.__shadowReaderRectReadCount++;
             return original.apply(this, args);
           };
           document.documentElement.classList.add('instant-scroll');
@@ -61,7 +61,7 @@ def main() -> int:
           window.dispatchEvent(new Event('scroll'));
         }""")
         page.wait_for_timeout(700)
-        rect_reads = page.evaluate("window.__quietReaderRectReadCount")
+        rect_reads = page.evaluate("window.__shadowReaderRectReadCount")
         max_source = page.evaluate("Math.max(-1, ...Array.from(document.querySelectorAll('#prose [data-reader-paragraph-index]')).map(node => Number(node.dataset.readerParagraphIndex) || 0))")
         if rect_reads > 300:
             failures.append(f"virtual window scroll update made {rect_reads} layout reads for {PARAGRAPH_COUNT + 1} source paragraphs; expected bounded work")

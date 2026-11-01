@@ -15,7 +15,7 @@
 
 ## Compatibility notes
 
-The visible application name is now **Shadow Reader**. Existing progress and preference storage keys (`quietReaderProgressV1` and `quietReaderPrefs`) are intentionally unchanged so this rebrand does not orphan saved reading positions or display preferences in the same Firefox origin. The server now prefers `SHADOW_READER_PORT`; the old `QUIET_READER_PORT` variable remains accepted as a compatibility alias. Continue to use `http://127.0.0.1:8765/` so existing origin-scoped state remains accessible.
+The application is named **Shadow Reader**. Reading progress and display preferences are stored in the browser under `shadowReaderProgressV1` and `shadowReaderPrefs`, and the port can be set with `SHADOW_READER_PORT`. Keep using the same address (`http://127.0.0.1:8765/` by default), because browser storage is tied to it.
 
 ## Validation summary
 

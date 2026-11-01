@@ -16,7 +16,7 @@ from urllib.parse import parse_qs, urlsplit
 
 APP_DIR = Path(__file__).resolve().parent
 HOST = "127.0.0.1"
-PORT = int(os.environ.get("SHADOW_READER_PORT", os.environ.get("QUIET_READER_PORT", "8765")))
+PORT = int(os.environ.get("SHADOW_READER_PORT", "8765"))
 MAX_UPLOAD = 80 * 1024 * 1024
 MAX_EXTRACTED_TEXT_BYTES = 25_000_000
 EXTRACTION_TIMEOUT_SECONDS = 150
@@ -133,7 +133,7 @@ class Handler(BaseHTTPRequestHandler):
             self.connection.settimeout(UPLOAD_READ_TIMEOUT_SECONDS)
             remaining = length
             header = bytearray()
-            with tempfile.NamedTemporaryFile(prefix="quiet-reader-", suffix=".pdf", delete=False) as tmp:
+            with tempfile.NamedTemporaryFile(prefix="shadow-reader-", suffix=".pdf", delete=False) as tmp:
                 tmp_name = tmp.name
                 while remaining:
                     chunk = self.rfile.read(min(1024 * 1024, remaining))

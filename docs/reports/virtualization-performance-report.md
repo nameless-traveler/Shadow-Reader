@@ -11,7 +11,7 @@ One caveat matters: these results **do not demonstrate a reduction in total brow
 
 ## Benchmark method
 
-- Compared the uploaded `Quiet-Reader-Debian-Trixie-reviewed.zip` build before the change with the virtualized candidate.
+- Compared the earlier, pre-virtualization build with the virtualized candidate.
 - Ran both in headless Chromium at a 1280 × 850 viewport.
 - Used two open/render trials per document and reported the median.
 - Used selectable text extracted from the three supplied PDFs via Poppler (`pdftotext -layout -enc UTF-8`), fed through the reader's text-file UI. The separate local server API suite was also run; the direct PDF-extraction endpoint was not driven by the browser benchmark itself.
@@ -49,7 +49,7 @@ The steady-state virtual window generally keeps around 36–40 source items moun
 
 ## Regression results
 
-- `node tests/parser-regression.cjs /mnt/data/quiet-work/alice.txt /mnt/data/quiet-work/shadow-slave-v6.txt /mnt/data/quiet-work/shadow-slave-v7.txt` — **296 test groups passed**; the full documents retained the expected chapters and sequences: Alice 12, Shadow Slave Volume 6 170, Shadow Slave Volume 7 354.
+- `node tests/parser-regression.cjs /path/to/alice.txt /path/to/shadow-slave-v6.txt /path/to/shadow-slave-v7.txt` — **296 test groups passed**; the full documents retained the expected chapters and sequences: Alice 12, Shadow Slave Volume 6 170, Shadow Slave Volume 7 354.
 - `node tests/resume-feature-regression.cjs` — **27 checks passed**.
 - `node tests/focus-here-feature-regression.cjs` — **10 checks passed**.
 - `python3 tests/performance-browser-smoke.py` — **passed**: 3,001 source paragraphs; 40 live paragraphs / 43 DOM nodes; tail window mounted at source index 3,000.

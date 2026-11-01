@@ -151,7 +151,7 @@ def main() -> int:
 
         # Re-open the same text file; the same fingerprint should offer Continue Reading and restore the source anchor.
         page.wait_for_timeout(650)
-        saved_before = page.evaluate("""() => { const all=JSON.parse(localStorage.getItem('quietReaderProgressV1')||'{}'); return all[Object.keys(all)[0]] || null; }""")
+        saved_before = page.evaluate("""() => { const all=JSON.parse(localStorage.getItem('shadowReaderProgressV1')||'{}'); return all[Object.keys(all)[0]] || null; }""")
         if not saved_before or not saved_before.get("paragraphIndex", -1) >= 0:
             failures.append(f"the virtual source position was not saved: {saved_before}")
         page.locator("#fileInput").set_input_files(payload)

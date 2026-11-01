@@ -15,7 +15,7 @@ const requiredFragments = [
   ['resume dialog', 'id="resumeDialog"'],
   ['Continue reading action', 'id="resumeBtn"'],
   ['Start from the beginning action', 'id="startOverBtn"'],
-  ['local saved state store', "const READING_PROGRESS_KEY = 'quietReaderProgressV1'"],
+  ['local saved state store', "const READING_PROGRESS_KEY = 'shadowReaderProgressV1'"],
   ['canonical source-text progress model', "const READING_PROGRESS_MODEL = 'source-text-v2'"],
   ['source paragraph offsets for mode-independent progress', 'function buildSourceParagraphOffsets(paragraphs)'],
   ['focus-mode source index preservation', 'bodySourceIndices'],
@@ -60,7 +60,7 @@ const chapters = [
   { start: 20, end: 30, heading: { number: '3', title: 'The End', displayTitle: 'The End' } }
 ];
 const sandbox = { chapters, hasDetectedChapters: true, documentParagraphs: [], sourceParagraphOffsets: [], totalSourceCharacters: 0, READING_PROGRESS_MODEL: 'source-text-v2' };
-vm.runInNewContext(helpers, sandbox, { filename: 'quiet-reader-resume-resolver.js' });
+vm.runInNewContext(helpers, sandbox, { filename: 'shadow-reader-resume-resolver.js' });
 
 test('stable source paragraph selects correct chapter after detector changes', () => {
   // Simulate a saved chapter index from an older detector, but a stable paragraph
