@@ -375,57 +375,13 @@ For exact test coverage, known limitations, and additional full-text test comman
 
 ```text
 Shadow-Reader/
-├── .github/
-│   └── workflows/
-│       └── ci.yml
-│
-├── .gitignore
-├── LICENSE
-├── README.md
-├── RELEASE_NOTES.md
-├── PERFORMANCE_BENCHMARK.pdf
-├── assets/
-│   └── shadow-reader-logo.png
-├── index.html
-├── server.py
-├── run.sh
-├── benchmarks/
-│   ├── README.md
-│   ├── METHODS_AND_LIMITATIONS.md
-│   ├── benchmark-results.csv
-│   ├── environment.json
-│   ├── run_browser_benchmark.py
-│   └── charts/
-│       ├── opening-time.png
-│       ├── dom-footprint.png
-│       ├── process-tree-pss.png
-│       └── scroll-correctness.png
-│
-├── docs/
-│   ├── reports/
-│   │   ├── README.md
-│   │   ├── review-and-test-report.md
-│   │   ├── touchpad-scroll-fix-report.md
-│   │   └── virtualization-performance-report.md
-│   │
-│   └── screenshots/
-│       ├── 01-normal-mode.png
-│       ├── 02-focus-here-hover.png
-│       └── 03-focus-mode.png
-│
-└── tests/
-    ├── TESTING.md
-    ├── source-style-manifest.json
-    ├── parser-regression.cjs
-    ├── resume-feature-regression.cjs
-    ├── focus-here-feature-regression.cjs
-    ├── server-api-regression.py
-    ├── release-branding-regression.py
-    ├── performance-browser-smoke.py
-    ├── virtualization-browser-smoke.py
-    ├── focus-here-browser-smoke.py
-    ├── resume-browser-smoke.py
-    └── touchpad-scroll-behavior.py
+├── index.html · server.py · run.sh      the app
+├── assets/                              logo
+├── benchmarks/                          data, charts, PERFORMANCE_BENCHMARK.pdf
+├── docs/                                reports and screenshots
+├── tests/                               regression and browser tests
+├── .github/workflows/ci.yml
+└── LICENSE · README.md · RELEASE_NOTES.md
 ```
 
 ## License
