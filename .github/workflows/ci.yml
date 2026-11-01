@@ -55,6 +55,9 @@ jobs:
  
       - name: Run logo route tests
         run: python3 tests/logo-route-regression.py
+
+      - name: Run host/origin check tests
+        run: python3 tests/host-check-regression.py
  
   browser-tests:
     name: Browser smoke tests

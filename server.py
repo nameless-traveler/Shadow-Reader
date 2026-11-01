@@ -81,8 +81,22 @@ class Handler(BaseHTTPRequestHandler):
 
     def _json(self, status: int, payload: dict) -> None:
         self._send(status, json.dumps(payload, ensure_ascii=False).encode("utf-8"), "application/json; charset=utf-8")
+    def _addressed_to_us(self) -> bool:
+        """Accept only requests aimed at this server's own address.
 
+        Blocks pages on other sites (and DNS-rebinding hostnames that point at 127.0.0.1)
+        from reaching the local server and its PDF extractor through the user's browser.
+        """
+        port = self.server.server_address[1]
+        hosts = {f"127.0.0.1:{port}", f"localhost:{port}"}
+        if (self.headers.get("Host") or "").lower() not in hosts:
+            return False
+        origin = self.headers.get("Origin")
+        return origin is None or origin.lower() in {f"http://{host}" for host in hosts}
     def do_GET(self) -> None:
+        if not self._addressed_to_us():
+            self._send(403, b"Forbidden")
+            return
         route = urlsplit(self.path).path
         if route in ("/", "/index.html"):
             try:
@@ -106,6 +120,9 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, b"Not found")
 
     def do_POST(self) -> None:
+        if not self._addressed_to_us():
+            self._json(403, {"error": "Forbidden"})
+            return
         if urlsplit(self.path).path != "/api/extract":
             self._json(404, {"error": "Not found"})
             return
