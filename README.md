@@ -4,7 +4,7 @@
   <p><strong><em>An invaluable companion on your reading journey.</em></strong></p>
   <p>A calm, private reader for long novels and text-based PDFs.<br>
   Find your chapters, settle into the story, and pick up where you left off.</p>
-  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-1.0.0.zip"><strong>↓ Download for Debian 13 (Trixie)</strong></a></p>
+  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-1.0.1.zip"><strong>↓ Download for Debian 13 (Trixie)</strong></a></p>
   <p><a href="#install-and-run">Get started</a> · <a href="#features">Features</a> · <a href="benchmarks/PERFORMANCE_BENCHMARK.pdf">Performance</a> · <a href="tests/TESTING.md">Testing</a> · <a href="RELEASE_NOTES.md">Release notes</a></p>
 </div>
 
