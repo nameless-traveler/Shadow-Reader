@@ -2,7 +2,7 @@
 
 These reports are optional supporting material. They are useful for understanding why major changes were made, what was tested, and which limitations remain; they are not prerequisites for installing or using Shadow Reader.
 
-For current performance figures, use the [performance benchmark PDF](../../PERFORMANCE_BENCHMARK.pdf), the [benchmark overview](../../benchmarks/README.md), and the [methods and limitations](../../benchmarks/METHODS_AND_LIMITATIONS.md). The files in `benchmarks/` contain the raw CSV observations, environment metadata, charts, and reproducible local harness.
+For current performance figures, use the [performance benchmark PDF](../../benchmarks/PERFORMANCE_BENCHMARK.pdf), the [benchmark overview](../../benchmarks/README.md), and the [methods and limitations](../../benchmarks/METHODS_AND_LIMITATIONS.md). The files in `benchmarks/` contain the raw CSV observations, environment metadata, charts, and reproducible local harness.
 
 ## Reports
 

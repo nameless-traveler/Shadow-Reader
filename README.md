@@ -2,18 +2,15 @@
   <img src="assets/shadow-reader-logo.png" alt="Shadow Reader: an open book accompanied by a flowing shadow" width="220">
   <h1>Shadow Reader</h1>
   <p><strong><em>An invaluable companion on your reading journey.</em></strong></p>
-  <p><strong>Not a reflection. Not an imitation. A companion.</strong><br>
-  A presence that follows, helps, remembers and stays.</p>
-  <p>A calm, private reading space for long novels and text-based PDFs.<br>
-  Settle into the story, move between chapters, and pick up where you left off.</p>
+  <p>A calm, private reader for long novels and text-based PDFs.<br>
+  Find your chapters, settle into the story, and pick up where you left off.</p>
   <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-1.0.0.zip"><strong>↓ Download for Debian 13 (Trixie)</strong></a></p>
-  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases">Releases</a> · <a href="#install-and-run">Get started</a> · <a href="#features">Explore features</a></p>
+  <p><a href="#install-and-run">Get started</a> · <a href="#features">Features</a> · <a href="benchmarks/PERFORMANCE_BENCHMARK.pdf">Performance</a> · <a href="tests/TESTING.md">Testing</a> · <a href="RELEASE_NOTES.md">Release notes</a></p>
 </div>
 
 <p align="center">
   <a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/nameless-traveler/Shadow-Reader?color=c6b18a&label=latest%20release"></a>
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-c6b18a"></a>
-  <img alt="Platform: Debian 13" src="https://img.shields.io/badge/platform-Debian%2013-a89acb">
 </p>
 
 ---
@@ -22,14 +19,8 @@
 
 **A local, distraction-free reader for long novels and text-based PDFs.** Shadow Reader reflows selectable PDF text into a comfortable reading layout, detects chapter headings, and provides Normal and Focus reading modes. It is designed for long books and keeps your reading progress on your own computer.
 
-Explore [features](#features), [installation](#install-and-run), [performance](#performance-benchmarks), [testing](tests/TESTING.md), [release notes](RELEASE_NOTES.md), and [engineering reports](docs/reports/README.md).
 
-
-
-
-[Performance report](PERFORMANCE_BENCHMARK.pdf) · [Benchmark data and charts](benchmarks/) · [Additional reports](docs/reports/README.md)
-
-
+*Not a reflection. Not an imitation. A companion: a presence that follows, helps, remembers and stays.*
 
 ---
 
@@ -256,7 +247,7 @@ The automated performance measurements were collected in this separate, containe
 
 **Important limits:** the machine above is not the target computer. The automated tests used headless Chromium and scripted wheel events, not Firefox's GUI or a physical touchpad. Process-tree PSS is an estimate across Chromium and its child processes; it is not a direct Firefox memory measurement. A 30,000-paragraph run at 4× CPU throttling did not finish within the automation time budget and is inconclusive. Speedometer 3.1 was not run because the benchmark host could not reach its site. There is no official third-party score or claim of a universal FPS improvement.
 
-For the full charts and raw observations, see [`PERFORMANCE_BENCHMARK.pdf`](PERFORMANCE_BENCHMARK.pdf), [`benchmarks/benchmark-results.csv`](benchmarks/benchmark-results.csv), [`benchmarks/environment.json`](benchmarks/environment.json), and [`benchmarks/METHODS_AND_LIMITATIONS.md`](benchmarks/METHODS_AND_LIMITATIONS.md).
+For the full charts and raw observations, see [`benchmarks/PERFORMANCE_BENCHMARK.pdf`](benchmarks/PERFORMANCE_BENCHMARK.pdf), [`benchmarks/benchmark-results.csv`](benchmarks/benchmark-results.csv), [`benchmarks/environment.json`](benchmarks/environment.json), and [`benchmarks/METHODS_AND_LIMITATIONS.md`](benchmarks/METHODS_AND_LIMITATIONS.md).
 
 ## Test environment
 
@@ -264,7 +255,7 @@ Keep the application runtime requirements separate from the optional test tools:
 
 - **Application target tested:** Debian GNU/Linux 13 (Trixie), using Firefox during manual use.
 - **Automated UI tests:** Debian 13 container, headless Chromium, Python Playwright. These confirm application interactions but are not equivalent to native Firefox/touchpad tests.
-- **GitHub Actions CI:** Lightweight regression tests run automatically on pushes to `main` and pull requests, using GitHub-hosted Ubuntu runners with Node.js 22 and Python 3.13. This workflow validates the regression suite but does not replace testing on the supported Debian 13 target.
+- **GitHub Actions CI:** two jobs run on every push to `main` and every pull request, on GitHub-hosted Ubuntu runners. *Regression Tests* (Node.js 22, Python 3.13, Poppler installed) runs the parser, progress, Focus Here, server API, real-PDF extraction, branding, logo and host/origin checks. *Browser smoke tests* (headless Chromium via Playwright) runs the performance, virtualization, Focus Here, Continue Reading and touchpad-scroll tests. CI does not replace testing on the supported Debian 13 target with Firefox.
 - **Benchmark measurements:** the container environment detailed above (AMD EPYC virtual CPU, 5 vCPUs, 5.8 GiB visible RAM, Chromium 144, 1366 × 768 viewport).
 - **Full-novel parser corpus:** *Alice's Adventures in Wonderland* (12 chapters), Shadow Slave Volume 6 (170 chapters), and Shadow Slave Volume 7 (354 chapters). These PDFs are test inputs and are **not included** in the source/release archive. The standard generated tests run without them; exact whole-document checks require you to supply locally owned copies and extract their text.
 
@@ -291,6 +282,14 @@ node tests/resume-feature-regression.cjs
 node tests/focus-here-feature-regression.cjs
 python3 tests/server-api-regression.py
 python3 tests/release-branding-regression.py
+python3 tests/logo-route-regression.py
+python3 tests/host-check-regression.py
+```
+
+The real-PDF extraction test uses the real `pdftotext`, so it needs Poppler installed (`sudo apt install -y poppler-utils`):
+
+```sh
+python3 tests/real-pdf-extraction.py
 ```
 
 The parser command runs the bundled heading-format fixtures and generated cases. The full-document chapter-count/title assertions require the three text files described in [`tests/TESTING.md`](tests/TESTING.md); those novels are not distributed with the project.
@@ -304,9 +303,12 @@ These are the results recorded for the release source, not a promise that every 
 | Parser fixtures and generated cases | 293 groups without the optional full-book text corpus; 296 groups when all three full-book text files are supplied |
 | Continue Reading and progress checks | 27 passed |
 | Focus Here feature checks | 10 passed |
-| Branding and port-compatibility checks | 10 passed |
-| Local server/API checks | 12 passed |
-| Browser smoke tests | Passed in headless Chromium for performance tracking, virtualization, search, resume, Focus Here, and touchpad-like scrolling |
+| Branding and naming checks | 9 passed |
+| Local server/API checks (fake extractor) | 12 passed |
+| Real PDF extraction (real Poppler) | 9 passed |
+| Logo route and size checks | 7 passed |
+| Host/origin checks | 12 passed |
+| Browser smoke tests | Passed in headless Chromium for performance tracking, virtualization, search, resume, Focus Here, and touchpad-like scrolling (also run in CI) |
 
 The browser smoke tests use a generated or supplied text fixture in the real reader UI. They are not a replacement for a manual Firefox test with a physical touchpad.
 

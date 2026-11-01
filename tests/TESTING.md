@@ -7,6 +7,10 @@ node tests/parser-regression.cjs
 node tests/resume-feature-regression.cjs
 node tests/focus-here-feature-regression.cjs
 python3 tests/server-api-regression.py
+python3 tests/real-pdf-extraction.py      # needs Poppler: sudo apt install -y poppler-utils
+python3 tests/release-branding-regression.py
+python3 tests/logo-route-regression.py
+python3 tests/host-check-regression.py
 python3 tests/performance-browser-smoke.py
 python3 tests/virtualization-browser-smoke.py
 ```
@@ -52,7 +56,11 @@ python3 tests/focus-here-browser-smoke.py /path/to/alices-adventures-in-wonderla
 
 The checks cover: control hidden by default; no reveal while the prose is not at the reading guide; intentional right-margin reveal; tooltip placement in the outer margin instead of over text; hide after leaving; switching into Focus mode at the same source paragraph/reading guide; progress not increasing from a transient chapter-bottom scroll; hiding the side control in Focus mode; avoiding a duplicate beside the final Focus button; reduced-motion-aware scripted scrolling, and a tab order that skips an unavailable/invisible Focus-here control. The resume-dialog browser test also checks keyboard focus trapping and the non-destructive Escape action.
 
-The local API integration test starts the real request handler on an ephemeral loopback port and uses a tiny fake `pdftotext` executable to test upload validation, health/error responses, page counts, oversized extraction termination, upload/extraction timeouts, and text-only startup without needing a bundled PDF fixture. The long-document performance smoke test renders 3,000 paragraphs and guards against progress tracking falling back to a full-DOM scan on each scroll.
+The local API integration test starts the real request handler on an ephemeral loopback port and uses a tiny fake `pdftotext` executable to test upload validation, health/error responses, page counts, oversized extraction termination, upload/extraction timeouts, and text-only startup without needing a bundled PDF fixture. The long-document performance smoke test renders 3,000 paragraphs and guards against progress tracking falling back to a full-DOM scan on each scroll. That fake extractor is deliberate (it lets the test provoke oversized output, timeouts and password errors), so it cannot show that Poppler really reads a PDF. `tests/real-pdf-extraction.py` covers that: it builds a small valid PDF in memory, sends it through the real request handler to the real `pdftotext`, and checks page count, text, UTF-8 and the error paths.
+
+`tests/logo-route-regression.py` checks that the logo is served as a real PNG, is cacheable, and stays under 400 KB. `tests/host-check-regression.py` checks that the server answers only requests addressed to its own address (`127.0.0.1` or `localhost` on its own port) and refuses foreign Host or Origin headers, which blocks DNS-rebinding and cross-site uploads.
+
+CI runs all of these, including the five browser tests (see `.github/workflows/ci.yml`).
 
 
 
