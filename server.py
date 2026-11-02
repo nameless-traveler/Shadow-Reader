@@ -140,7 +140,7 @@ class Handler(BaseHTTPRequestHandler):
         filename = parse_qs(urlsplit(self.path).query).get("name", ["document.pdf"])[0]
         extractor = shutil.which("pdftotext")
         if not extractor:
-            self._json(503, {"error": "The Poppler text extractor is missing. Install it with: sudo apt update && sudo apt install poppler-utils"})
+            self._json(503, {"error": "The Poppler text extractor (pdftotext) is missing. Install Poppler with your system's package manager, then restart Shadow Reader. Running ./run.sh offers the right command for your system."})
             return
         tmp_name = None
         try:
@@ -203,7 +203,8 @@ def main() -> None:
     if not shutil.which("pdftotext"):
         print("Poppler's pdftotext command is missing; PDF import is disabled for this run.")
         print("Plain-text (.txt) files still work. Install PDF support with:")
-        print("sudo apt update && sudo apt install poppler-utils")
+        print("Install Poppler with your package manager (the package is called poppler-utils, poppler-tools or poppler, depending on your distribution),")
+        print("or stop this and run ./run.sh, which offers the right command for your system.")
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     url = f"http://{HOST}:{PORT}/"
     print("\nShadow Reader is running locally.")
