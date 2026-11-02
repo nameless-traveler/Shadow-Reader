@@ -1,6 +1,6 @@
 # Shadow Reader — release notes
 
-## 1.0.2 — 2 November 2026
+## 2.0.0 — 2 November 2026
 
 - **Works beyond Debian.** `run.sh` now detects `apt`, `dnf`, `yum`, `pacman`, `zypper`, `apk`, `xbps` and `emerge`, shows the exact install command for Python 3 and Poppler, and asks before running it. It uses `sudo` or `doas`, or prints the command if neither exists.
 - **Safer in scripts.** Without an interactive terminal the launcher never prompts or installs; it prints the command and starts for `.txt` files.
