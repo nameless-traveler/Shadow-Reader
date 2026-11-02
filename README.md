@@ -4,7 +4,7 @@
   <p><strong><em>An invaluable companion on your reading journey.</em></strong></p>
   <p>A calm, private reader for long novels and text-based PDFs.<br>
   Find your chapters, settle into the story, and pick up where you left off.</p>
-  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-1.0.1.zip"><strong>↓ Download for Debian 13 (Trixie)</strong></a></p>
+  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-1.0.1.zip"><strong>↓ Download Shadow Reader for Linux</strong></a></p>
   <p><a href="#install-and-run">Get started</a> · <a href="#features">Features</a> · <a href="benchmarks/PERFORMANCE_BENCHMARK.pdf">Performance</a> · <a href="tests/TESTING.md">Testing</a> · <a href="RELEASE_NOTES.md">Release notes</a></p>
 </div>
 
@@ -80,7 +80,8 @@ Focus mode presents the detected chapter with dedicated navigation controls. Mov
 
 ### Supported target
 
-- **Target operating system:** Debian GNU/Linux 13 (Trixie).
+- **Developed and tested on:** Debian GNU/Linux 13 (Trixie).
+- **Other Linux distributions:** expected to work. The launcher is plain POSIX `sh` and can install the missing pieces with `apt`, `dnf`, `yum`, `pacman`, `zypper`, `apk`, `xbps` or `emerge` (Ubuntu, Linux Mint, Fedora, Arch, openSUSE, Alpine, Void, Gentoo and their relatives). Only Debian 13 has been run for real; for the others the package names were checked against each distribution's package listings and the launcher's install logic is tested with fake package managers. See [Poppler package names](#poppler-package-names-by-distribution).
 - **Test status:** the application has been used on Debian 13 Trixie with Firefox. Automated browser tests and performance measurements were run in a separate Debian 13 test container with headless Chromium; see [Test environment](#test-environment) for the exact details.
 - **Recommended browser:** Firefox. A modern desktop browser is needed to use the reader.
 
@@ -88,8 +89,8 @@ Focus mode presents the detected chapter with dedicated navigation controls. Mov
 
 | Dependency | Why it is needed | Installed by `run.sh`? |
 |---|---|---|
-| Python 3 (3.10 or newer) | Runs the local HTTP server. The app uses Python's standard library; no Python packages are needed for normal use. | No. Debian 13 already provides Python 3. |
-| Poppler `pdftotext` (`poppler-utils` package) | Extracts selectable text from PDFs. | **Offered interactively if missing.** See below. |
+| Python 3 (3.10 or newer) | Runs the local HTTP server. The app uses Python's standard library; no Python packages are needed for normal use. | Usually already installed. `run.sh` offers to install it if it is missing. |
+| Poppler `pdftotext` (package name varies by distribution) | Extracts selectable text from PDFs. | **Offered interactively if missing.** See below. |
 | A desktop browser | Displays the reader UI. Firefox is recommended. | No. Install/use your preferred browser separately. |
 
 **Node.js, `pip`, Playwright, and `psutil` are not required to read books.** Node.js and Playwright are only needed for the optional development/test workflows. `psutil` is optional for the benchmark's process-memory measurements.
@@ -98,13 +99,13 @@ Focus mode presents the detected chapter with dedicated navigation controls. Mov
 
 The launcher is deliberately small and does not install a large dependency stack:
 
-1. It checks whether the `pdftotext` command is available.
-2. If it is missing, it asks whether you want to install Poppler.
-3. If you answer **yes** and `sudo` is available, it runs `sudo apt update` and `sudo apt install -y poppler-utils`.
-4. If you decline, the server still starts and plain-text `.txt` files remain usable; PDF import will not work until Poppler is installed.
+1. It checks that Python 3 and the `pdftotext` command are available.
+2. If something is missing, it detects your package manager, shows the exact command it would run, and asks `Run it now? [y/N]`. It never installs anything without your answer.
+3. It uses `sudo` or `doas` when you are not root. If neither exists, it prints the command for you to run as an administrator.
+4. If you decline (or it is not running in an interactive terminal), the server still starts and plain-text `.txt` files remain usable; PDF import will not work until Poppler is installed. If Python 3 is missing and not installed, it stops with a clear message.
 5. It starts `server.py` with Python 3 and attempts to open your default browser at `http://127.0.0.1:8765/`.
 
-It does **not** install Python packages, Node.js, Firefox, or Chromium. Installing Poppler requires an internet connection and permission to use `sudo` unless you install it manually as an administrator.
+It does **not** install Node.js, Firefox, or Chromium. Installing packages requires an internet connection and administrator permission.
 
 ## Install and run
 
@@ -142,12 +143,22 @@ chmod +x run.sh
 
 ### If Poppler is not installed
 
-The launcher asks before installing it. You can also install PDF support manually:
+The launcher asks before installing it. You can also install PDF support manually.
 
-```sh
-sudo apt update
-sudo apt install -y poppler-utils
-```
+#### Poppler package names by distribution
+
+| Distribution | Command |
+|---|---|
+| Debian, Ubuntu, Linux Mint | `sudo apt update && sudo apt install -y poppler-utils` |
+| Fedora, RHEL and relatives | `sudo dnf install -y poppler-utils` |
+| Arch, Manjaro, EndeavourOS | `sudo pacman -S --needed poppler` |
+| openSUSE | `sudo zypper install poppler-tools` |
+| Alpine | `doas apk add poppler-utils` (or `sudo`, or as root) |
+| Void | `sudo xbps-install -S poppler` |
+| Gentoo | `sudo emerge app-text/poppler` (the `utils` USE flag must be enabled; it is by default) |
+| NixOS | `nix-shell -p poppler_utils` |
+
+The same package provides `pdftotext` everywhere; only its name differs. On Arch, if the install fails with "failed retrieving file", update your system first (`sudo pacman -Syu`) and try again.
 
 To run the reader without Poppler, decline the install prompt. Plain-text files will still work.
 
@@ -254,8 +265,9 @@ For the full charts and raw observations, see [`benchmarks/PERFORMANCE_BENCHMARK
 Keep the application runtime requirements separate from the optional test tools:
 
 - **Application target tested:** Debian GNU/Linux 13 (Trixie), using Firefox during manual use.
+- **Launcher (`run.sh`) tests:** run under dash, bash and busybox ash with fake package managers for all eight supported package managers. They check which package is requested and how, with and without `sudo`/`doas`/root and a terminal, without installing anything.
 - **Automated UI tests:** Debian 13 container, headless Chromium, Python Playwright. These confirm application interactions but are not equivalent to native Firefox/touchpad tests.
-- **GitHub Actions CI:** two jobs run on every push to `main` and every pull request, on GitHub-hosted Ubuntu runners. *Regression Tests* (Node.js 22, Python 3.13, Poppler installed) runs the parser, progress, Focus Here, server API, real-PDF extraction, branding, logo and host/origin checks. *Browser smoke tests* (headless Chromium via Playwright) runs the performance, virtualization, Focus Here, Continue Reading and touchpad-scroll tests. CI does not replace testing on the supported Debian 13 target with Firefox.
+- **GitHub Actions CI:** two jobs run on every push to `main` and every pull request, on GitHub-hosted Ubuntu runners. *Regression Tests* (Node.js 22, Python 3.13, Poppler installed) runs the parser, progress, Focus Here, server API, real-PDF extraction, branding, logo, host/origin and launcher checks. *Browser smoke tests* (headless Chromium via Playwright) runs the performance, virtualization, Focus Here, Continue Reading and touchpad-scroll tests. CI does not replace testing on the supported Debian 13 target with Firefox.
 - **Benchmark measurements:** the container environment detailed above (AMD EPYC virtual CPU, 5 vCPUs, 5.8 GiB visible RAM, Chromium 144, 1366 × 768 viewport).
 - **Full-novel parser corpus:** *Alice's Adventures in Wonderland* (12 chapters), Shadow Slave Volume 6 (170 chapters), and Shadow Slave Volume 7 (354 chapters). These PDFs are test inputs and are **not included** in the source/release archive. The standard generated tests run without them; exact whole-document checks require you to supply locally owned copies and extract their text.
 
@@ -267,7 +279,7 @@ The following tools are for development and testing only. They are **not require
 
 Requirements: Node.js for `.cjs` scripts and Python 3 for the server/API test. The recorded test environment used Node.js 22.16.0 and Python 3.13.5.
 
-If Node.js is not installed, install Debian’s package first:
+If Node.js is not installed, install it with your package manager. On Debian or Ubuntu:
 
 ```sh
 sudo apt update
@@ -284,9 +296,10 @@ python3 tests/server-api-regression.py
 python3 tests/release-branding-regression.py
 python3 tests/logo-route-regression.py
 python3 tests/host-check-regression.py
+python3 tests/run-sh-regression.py
 ```
 
-The real-PDF extraction test uses the real `pdftotext`, so it needs Poppler installed (`sudo apt install -y poppler-utils`):
+The real-PDF extraction test uses the real `pdftotext`, so it needs Poppler installed (see the package table above):
 
 ```sh
 python3 tests/real-pdf-extraction.py
@@ -314,7 +327,7 @@ The browser smoke tests use a generated or supplied text fixture in the real rea
 
 ### 2. Browser interaction tests (optional)
 
-These tests use Playwright with Chromium. On Debian, a virtual environment avoids changing system Python packages:
+These tests use Playwright with Chromium. On Debian or Ubuntu, a virtual environment avoids changing system Python packages:
 
 ```sh
 sudo apt update
@@ -365,7 +378,7 @@ For exact test coverage, known limitations, and additional full-text test comman
 | Problem | What to try |
 |---|---|
 | The browser did not open automatically | Open `http://127.0.0.1:8765/` manually while `run.sh` is still running. |
-| PDF import says Poppler is missing | Run `sudo apt update && sudo apt install -y poppler-utils`, then restart `./run.sh`. |
+| PDF import says Poppler is missing | Install Poppler with your package manager (see [Poppler package names](#poppler-package-names-by-distribution)), then restart `./run.sh`. |
 | The page says the port is already in use | Start with `SHADOW_READER_PORT=8766 ./run.sh` and open `http://127.0.0.1:8766/`. |
 | Saved progress seems missing | Use the exact same URL/origin and browser profile used previously. Check whether site data was cleared. |
 | The chapter list is incomplete or has false positives | Check the PDF's text layer and heading format. Normal mode remains available even if chapter detection is imperfect. |

@@ -4,7 +4,7 @@
 tests/server-api-regression.py uses a fake extractor on purpose (to test limits and
 timeouts). This test is the complement: it builds a small valid PDF in memory, sends
 it to the real request handler, and checks what the real Poppler binary returns.
-Needs `poppler-utils`; fails loudly if it is missing so CI cannot pass without it.
+Needs Poppler (the package that provides `pdftotext`); fails loudly if it is missing so CI cannot pass without it.
 """
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ def post(port: int, body: bytes, name: str = "sample.pdf") -> tuple[int, dict]:
 
 def main() -> int:
     if shutil.which("pdftotext") is None:
-        print("FAIL: pdftotext not found. Install it with: sudo apt-get install -y poppler-utils")
+        print("FAIL: pdftotext not found. Install Poppler first (Debian/Ubuntu: sudo apt-get install -y poppler-utils)")
         return 1
 
     pages = [

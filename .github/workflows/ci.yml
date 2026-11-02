@@ -56,6 +56,12 @@ jobs:
       - name: Run logo route tests
         run: python3 tests/logo-route-regression.py
 
+      - name: Run launcher (run.sh) tests
+        run: |
+          sudo apt-get install -y shellcheck
+          shellcheck -s sh run.sh
+          python3 tests/run-sh-regression.py
+
       - name: Run host/origin check tests
         run: python3 tests/host-check-regression.py
  

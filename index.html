@@ -2098,7 +2098,7 @@
           closeBookSearchDialog();
           const charCount = paragraphs.reduce((sum, p) => sum + p.length, 0);
           if (!paragraphs.length || charCount < 25) {
-            throw new Error('I couldn’t find selectable text in this file. It may be a scanned PDF made from page images. On Debian, you can make it searchable with OCRmyPDF, then open the new PDF here.');
+            throw new Error('I couldn’t find selectable text in this file. It may be a scanned PDF made from page images. You can make it searchable with an OCR tool such as OCRmyPDF, then open the new PDF here.');
           }
           openedFilename = file.name;
           documentParagraphs = paragraphs;
