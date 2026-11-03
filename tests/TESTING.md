@@ -84,3 +84,5 @@ The release review separately compares the original non-virtualized build with t
 ## Touchpad scroll regression
 
 Run `python3 tests/touchpad-scroll-behavior.py`. It loads an 8,000-paragraph generated novel into the actual reader UI, streams small wheel deltas down and up, and verifies that the viewport moves by approximately the requested distance. The test also asserts that virtualized content has `overflow-anchor: none`, ordinary scrolling causes no application `scrollTo()` corrections, the live DOM remains bounded, and no page errors occur. This wheel stream is a deterministic proxy for touchpad gesture input, not a simulation of every physical touchpad's inertia; confirm final feel with Firefox on the target machine.
+
+Note: `tests/distro-smoke.sh` is run by CI inside fresh distribution containers (`docker run --rm -v "$PWD":/src:ro alpine:latest sh /src/tests/distro-smoke.sh /src`). It needs a system without Poppler, so do not run it on your own machine.

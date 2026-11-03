@@ -28,7 +28,7 @@ POPPLER_CASES = {
     "yum": ["yum install -y poppler-utils"],
     "pacman": ["pacman -S --needed --noconfirm poppler"],
     "zypper": ["zypper --non-interactive install poppler-tools"],
-    "apk": ["apk add poppler-utils"],
+    "apk": ["apk add --no-cache poppler-utils"],
     "xbps-install": ["xbps-install -Sy poppler"],
     "emerge": ["emerge --ask=n app-text/poppler"],
 }
@@ -38,7 +38,7 @@ PYTHON_CASES = {
     "dnf": "dnf install -y python3 poppler-utils",
     "pacman": "pacman -S --needed --noconfirm python poppler",
     "zypper": "zypper --non-interactive install python3 poppler-tools",
-    "apk": "apk add python3 poppler-utils",
+    "apk": "apk add --no-cache python3 poppler-utils",
     "xbps-install": "xbps-install -Sy python3 poppler",
     "emerge": "emerge --ask=n dev-lang/python app-text/poppler",
 }
@@ -121,10 +121,10 @@ def drop_privileges(box: Sandbox) -> None:
         os.setuid(65534)
 
 
-def run_plain(shell: list[str], box: Sandbox) -> tuple[int, str]:
+def run_plain(shell: list[str], box: Sandbox, extra_env: dict[str, str] | None = None) -> tuple[int, str]:
     """Run run.sh with no terminal attached (stdin is /dev/null)."""
     result = subprocess.run(
-        shell + [str(box.dir / "run.sh")], env=box.env(), stdin=subprocess.DEVNULL,
+        shell + [str(box.dir / "run.sh")], env={**box.env(), **(extra_env or {})}, stdin=subprocess.DEVNULL,
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=30,
         preexec_fn=lambda: drop_privileges(box),
     )
@@ -207,7 +207,7 @@ def main() -> int:
             box = Sandbox(["apk"], uid="0")
             code, out = run_tty(shell, box, "y")
             check(f"[{label}] root runs the installer directly",
-                  box.logged() == ["apk add poppler-utils"] and code == 0, f"{box.logged()}\n{out}")
+                  box.logged() == ["apk add --no-cache poppler-utils"] and code == 0, f"{box.logged()}\n{out}")
             box.cleanup()
 
         # doas instead of sudo (common on Alpine/Void).
@@ -232,6 +232,14 @@ def main() -> int:
         check(f"[{label}] without a terminal it does not prompt or install",
               box.logged() == [] and "not an interactive terminal" in out
               and "PYTHON-STARTED server.py" in out and code == 0, out)
+        box.cleanup()
+
+        # SHADOW_READER_ASSUME_YES (used by the container tests): installs with no terminal and no question.
+        box = Sandbox(["apk", "sudo"])
+        code, out = run_plain(shell, box, {"SHADOW_READER_ASSUME_YES": "1"})
+        check(f"[{label}] SHADOW_READER_ASSUME_YES installs without a terminal or a prompt",
+              [line for line in box.logged() if line.startswith("apk")] == ["apk add --no-cache poppler-utils"]
+              and "[y/N]" not in out and "PYTHON-STARTED server.py" in out and code == 0, f"{box.logged()}\n{out}")
         box.cleanup()
 
         # Unknown package manager: helpful message, still starts.

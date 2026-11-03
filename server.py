@@ -61,7 +61,7 @@ def _run_bounded_extraction(extractor: str, pdf_path: str) -> tuple[str, bytes |
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "ShadowReader/2.0.0"
+    server_version = "ShadowReader/2.0.1"
 
     def log_message(self, fmt: str, *args) -> None:
         # Keep the terminal calm; server errors are reported by the relevant handler.

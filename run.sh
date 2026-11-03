@@ -2,7 +2,8 @@
 # Shadow Reader launcher. Works on any Linux with POSIX sh.
 # If Python 3 or Poppler's pdftotext is missing, it offers to install them with
 # whichever package manager this system has (apt, dnf, yum, pacman, zypper, apk,
-# xbps, emerge). It never installs anything without asking first.
+# xbps, emerge). It never installs anything without asking first, unless you set
+# SHADOW_READER_ASSUME_YES=1 (for scripts and containers).
 set -eu
 cd "$(dirname "$0")"
 
@@ -60,7 +61,7 @@ build_commands() {
     yum) CMD1="yum install -y $*" ;;
     pacman) CMD1="pacman -S --needed --noconfirm $*" ;;
     zypper) CMD1="zypper --non-interactive install $*" ;;
-    apk) CMD1="apk add $*" ;;
+    apk) CMD1="apk add --no-cache $*" ;;
     xbps-install) CMD1="xbps-install -Sy $*" ;;
     emerge) CMD1="emerge --ask=n $*" ;;
   esac
@@ -125,18 +126,20 @@ offer_install() {
   echo "To install it, this command would run:"
   display_commands
 
-  if [ ! -t 0 ]; then
+  if [ -n "${SHADOW_READER_ASSUME_YES:-}" ]; then
+    echo "SHADOW_READER_ASSUME_YES is set, so it is installing without asking."
+  elif [ ! -t 0 ]; then
     echo "This is not an interactive terminal, so nothing was installed. Run the command above yourself."
     return 1
+  else
+    printf "Run it now? [y/N] "
+    answer=""
+    read -r answer || answer=""
+    case "$answer" in
+      y | Y | yes | YES) ;;
+      *) return 1 ;;
+    esac
   fi
-
-  printf "Run it now? [y/N] "
-  answer=""
-  read -r answer || answer=""
-  case "$answer" in
-    y | Y | yes | YES) ;;
-    *) return 1 ;;
-  esac
 
   # $PRIV and the commands are plain words defined above, so splitting is intended.
   # shellcheck disable=SC2086

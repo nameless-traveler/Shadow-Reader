@@ -4,7 +4,7 @@
   <p><strong><em>An invaluable companion on your reading journey.</em></strong></p>
   <p>A calm, private reader for long novels and text-based PDFs.<br>
   Find your chapters, settle into the story, and pick up where you left off.</p>
-  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-2.0.0.zip"><strong>↓ Download Shadow Reader for Linux</strong></a></p>
+  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-2.0.1.zip"><strong>↓ Download Shadow Reader for Linux</strong></a></p>
   <p><a href="#install-and-run">Get started</a> · <a href="#features">Features</a> · <a href="benchmarks/PERFORMANCE_BENCHMARK.pdf">Performance</a> · <a href="tests/TESTING.md">Testing</a> · <a href="RELEASE_NOTES.md">Release notes</a></p>
 </div>
 
@@ -81,7 +81,7 @@ Focus mode presents the detected chapter with dedicated navigation controls. Mov
 ### Supported target
 
 - **Developed and tested on:** Debian GNU/Linux 13 (Trixie).
-- **Other Linux distributions:** expected to work. The launcher is plain POSIX `sh` and can install the missing pieces with `apt`, `dnf`, `yum`, `pacman`, `zypper`, `apk`, `xbps` or `emerge` (Ubuntu, Linux Mint, Fedora, Arch, openSUSE, Alpine, Void, Gentoo and their relatives). Only Debian 13 has been run for real; for the others the package names were checked against each distribution's package listings and the launcher's install logic is tested with fake package managers. See [Poppler package names](#poppler-package-names-by-distribution).
+- **Other Linux distributions:** every push to `main` runs `run.sh` in a fresh container of Debian 13, Fedora, Arch Linux, Alpine and openSUSE Tumbleweed. It installs Python and Poppler with that distribution's package manager, starts the server and extracts a real PDF. Ubuntu, Linux Mint and other relatives of these should behave the same. The launcher also knows `yum`, `xbps` (Void) and `emerge` (Gentoo), but those are not run in CI. See [Poppler package names](#poppler-package-names-by-distribution).
 - **Test status:** the application has been used on Debian 13 Trixie with Firefox. Automated browser tests and performance measurements were run in a separate Debian 13 test container with headless Chromium; see [Test environment](#test-environment) for the exact details.
 - **Recommended browser:** Firefox. A modern desktop browser is needed to use the reader.
 
@@ -105,7 +105,7 @@ The launcher is deliberately small and does not install a large dependency stack
 4. If you decline (or it is not running in an interactive terminal), the server still starts and plain-text `.txt` files remain usable; PDF import will not work until Poppler is installed. If Python 3 is missing and not installed, it stops with a clear message.
 5. It starts `server.py` with Python 3 and attempts to open your default browser at `http://127.0.0.1:8765/`.
 
-It does **not** install Node.js, Firefox, or Chromium. Installing packages requires an internet connection and administrator permission.
+It does **not** install Node.js, Firefox, or Chromium. Installing packages requires an internet connection and administrator permission. For unattended installs (a container, a provisioning script), set `SHADOW_READER_ASSUME_YES=1` to skip the question.
 
 ## Install and run
 
@@ -265,9 +265,9 @@ For the full charts and raw observations, see [`benchmarks/PERFORMANCE_BENCHMARK
 Keep the application runtime requirements separate from the optional test tools:
 
 - **Application target tested:** Debian GNU/Linux 13 (Trixie), using Firefox during manual use.
-- **Launcher (`run.sh`) tests:** run under dash, bash and busybox ash with fake package managers for all eight supported package managers. They check which package is requested and how, with and without `sudo`/`doas`/root and a terminal, without installing anything.
+- **Launcher (`run.sh`) tests:** two layers. Fast checks run under dash, bash and busybox ash with fake package managers for all eight supported package managers (which package is requested, with and without `sudo`/`doas`/root and a terminal). Real-install checks (`tests/distro-smoke.sh`) run in CI inside fresh Debian 13, Fedora, Arch, Alpine and openSUSE containers.
 - **Automated UI tests:** Debian 13 container, headless Chromium, Python Playwright. These confirm application interactions but are not equivalent to native Firefox/touchpad tests.
-- **GitHub Actions CI:** two jobs run on every push to `main` and every pull request, on GitHub-hosted Ubuntu runners. *Regression Tests* (Node.js 22, Python 3.13, Poppler installed) runs the parser, progress, Focus Here, server API, real-PDF extraction, branding, logo, host/origin and launcher checks. *Browser smoke tests* (headless Chromium via Playwright) runs the performance, virtualization, Focus Here, Continue Reading and touchpad-scroll tests. CI does not replace testing on the supported Debian 13 target with Firefox.
+- **GitHub Actions CI:** three jobs run on every push to `main` and every pull request, on GitHub-hosted Ubuntu runners. *Regression Tests* (Node.js 22, Python 3.13, Poppler installed) runs the parser, progress, Focus Here, server API, real-PDF extraction, branding, logo, host/origin and launcher checks. *Browser smoke tests* (headless Chromium via Playwright) runs the performance, virtualization, Focus Here, Continue Reading and touchpad-scroll tests. A third job, *Real install*, runs the launcher in fresh distribution containers as described above. CI does not replace testing on the supported Debian 13 target with Firefox.
 - **Benchmark measurements:** the container environment detailed above (AMD EPYC virtual CPU, 5 vCPUs, 5.8 GiB visible RAM, Chromium 144, 1366 × 768 viewport).
 - **Full-novel parser corpus:** *Alice's Adventures in Wonderland* (12 chapters), Shadow Slave Volume 6 (170 chapters), and Shadow Slave Volume 7 (354 chapters). These PDFs are test inputs and are **not included** in the source/release archive. The standard generated tests run without them; exact whole-document checks require you to supply locally owned copies and extract their text.
 
