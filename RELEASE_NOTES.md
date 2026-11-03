@@ -1,5 +1,9 @@
 # Shadow Reader — release notes
 
+## 2.0.2 — 3 November 2026
+
+- **Tab icon.** The browser tab now shows the Shadow Reader icon.
+
 ## 2.0.1 — 3 November 2026
 
 - **Tested on real systems.** CI now starts a fresh Debian 13, Fedora, Arch Linux, Alpine and openSUSE Tumbleweed container, lets `run.sh` install Python and Poppler, starts the server and extracts a real PDF.
@@ -22,7 +26,7 @@
 - **Renamed storage.** Browser storage keys are now `shadowReaderProgressV1` and `shadowReaderPrefs`, and the older alias for the port setting is gone (use `SHADOW_READER_PORT`). **Reading progress and display settings saved by 1.0.0 do not carry over;** the reader starts fresh once.
 - CI now also tests real PDF extraction with Poppler and runs the browser tests.
 
-## 1.0.0 — 27 October 2026
+## 1.0.0 — 30 October 2026
 
 **Platform:** Debian Trixie / XFCE, Firefox-friendly local web UI
 

@@ -11,6 +11,7 @@ server = (ROOT / "server.py").read_text(encoding="utf-8")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 checks = []
 checks.append(("document title uses Shadow Reader", "<title>Shadow Reader — local novel reader</title>" in index))
+checks.append(("page declares a favicon (no blank tab icon)", 'rel="icon"' in index))
 checks.append(("visible brand uses Shadow Reader", 'class="brand-name">Shadow Reader</div>' in index))
 checks.append(("no old product name remains in app UI", "Quiet Reader" not in index and "Quiet reader" not in index))
 checks.append(("progress storage key uses the Shadow Reader name", "'shadowReaderProgressV1'" in index))
