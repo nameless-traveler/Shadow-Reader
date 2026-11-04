@@ -16,3 +16,8 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+
+# Windows build output
+/dist/
+/poppler/
+/python/

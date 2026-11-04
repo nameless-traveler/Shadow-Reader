@@ -54,6 +54,9 @@ jobs:
       - name: Run extractor lookup tests
         run: python3 tests/extractor-lookup-regression.py
 
+      - name: Run Windows packaging tests
+        run: python3 tests/windows-package-regression.py
+
       - name: Run release branding tests
         run: python3 tests/release-branding-regression.py
 
@@ -180,6 +183,10 @@ jobs:
       - name: Extractor lookup tests
         if: ${{ !cancelled() }}
         run: python tests/extractor-lookup-regression.py
+
+      - name: Windows packaging tests
+        if: ${{ !cancelled() }}
+        run: python tests/windows-package-regression.py
 
       - name: Real PDF extraction (real Poppler)
         if: ${{ !cancelled() }}

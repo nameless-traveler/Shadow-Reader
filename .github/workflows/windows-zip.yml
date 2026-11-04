@@ -1,0 +1,42 @@
+name: Build Windows ZIP
+
+# Builds the portable Windows download (embedded Python + bundled Poppler), then runs it for real.
+# Start it by hand (Actions tab > Build Windows ZIP > Run workflow) or by pushing a version tag.
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build and test the Windows ZIP
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Install the build helper
+        run: python -m pip install pefile
+
+      - name: Build the ZIP
+        run: python windows/build_windows_zip.py --out dist/Shadow-Reader-windows.zip
+
+      - name: Run the ZIP like a user would (bundled Python, bundled Poppler, real PDF)
+        run: python windows/smoke_test_zip.py dist/Shadow-Reader-windows.zip
+
+      - name: Keep the ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: Shadow-Reader-windows
+          path: dist/Shadow-Reader-windows.zip
+          if-no-files-found: error
