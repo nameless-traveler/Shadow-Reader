@@ -51,6 +51,9 @@ jobs:
       - name: Run server API tests
         run: python3 tests/server-api-regression.py
 
+      - name: Run extractor lookup tests
+        run: python3 tests/extractor-lookup-regression.py
+
       - name: Run release branding tests
         run: python3 tests/release-branding-regression.py
 
@@ -170,9 +173,13 @@ jobs:
         if: ${{ !cancelled() }}
         run: node tests/focus-here-feature-regression.cjs
 
-      - name: Server API tests (skipped on Windows for now)
+      - name: Server API tests
         if: ${{ !cancelled() }}
         run: python tests/server-api-regression.py
+
+      - name: Extractor lookup tests
+        if: ${{ !cancelled() }}
+        run: python tests/extractor-lookup-regression.py
 
       - name: Real PDF extraction (real Poppler)
         if: ${{ !cancelled() }}

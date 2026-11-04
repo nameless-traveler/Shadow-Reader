@@ -22,18 +22,49 @@ MAX_EXTRACTED_TEXT_BYTES = 25_000_000
 EXTRACTION_TIMEOUT_SECONDS = 150
 EXTRACTION_POLL_INTERVAL_SECONDS = 0.025
 UPLOAD_READ_TIMEOUT_SECONDS = 60
+# The Windows download ships its own Poppler here (next to server.py); it is used before anything installed on the system.
+BUNDLED_POPPLER_DIR = APP_DIR / "poppler" / "bin"
 
 
-def _run_bounded_extraction(extractor: str, pdf_path: str) -> tuple[str, bytes | str | None]:
+def _find_extractor() -> str | None:
+    """Path of the pdftotext to use: the bundled copy if present, otherwise one found on PATH."""
+    name = "pdftotext.exe" if os.name == "nt" else "pdftotext"
+    bundled = BUNDLED_POPPLER_DIR / name
+    if bundled.is_file():
+        return str(bundled)
+    return shutil.which("pdftotext")
+
+
+def _extractor_command(extractor: str | list[str]) -> list[str]:
+    """The extractor as a command list (tests may pass a list such as [python, fake_script])."""
+    return list(extractor) if isinstance(extractor, (list, tuple)) else [extractor]
+
+
+def _popen_options() -> dict:
+    """On Windows, start pdftotext without flashing a console window."""
+    if os.name == "nt":
+        return {"creationflags": subprocess.CREATE_NO_WINDOW}
+    return {}
+
+
+def _missing_extractor_message() -> str:
+    if os.name == "nt":
+        return ("The Poppler text extractor (pdftotext) is missing. Download Shadow Reader again and keep the "
+                "poppler folder next to server.py.")
+    return ("The Poppler text extractor (pdftotext) is missing. Install Poppler with your system's package manager, "
+            "then restart Shadow Reader. Running ./run.sh offers the right command for your system.")
+
+
+def _run_bounded_extraction(extractor: str | list[str], pdf_path: str) -> tuple[str, bytes | str | None]:
     """Run pdftotext without buffering an unbounded extraction in RAM.
 
     Returns ("ok", utf8_bytes), ("too_large", None), ("timeout", None), or
     ("error", stderr_text). Output is written to a temporary file and watched
     while Poppler runs, so a malformed PDF cannot fill memory with stdout.
     """
-    command = [extractor, "-enc", "UTF-8", "-layout", pdf_path, "-"]
+    command = _extractor_command(extractor) + ["-enc", "UTF-8", "-layout", pdf_path, "-"]
     with tempfile.TemporaryFile() as output, tempfile.TemporaryFile() as errors:
-        process = subprocess.Popen(command, stdout=output, stderr=errors)
+        process = subprocess.Popen(command, stdout=output, stderr=errors, **_popen_options())
         started = time.monotonic()
         while process.poll() is None:
             if os.fstat(output.fileno()).st_size > MAX_EXTRACTED_TEXT_BYTES:
@@ -115,7 +146,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, data, "image/png", "public, max-age=86400")
             return
         if route == "/api/health":
-            self._json(200, {"ok": True, "extractor": shutil.which("pdftotext") is not None})
+            self._json(200, {"ok": True, "extractor": _find_extractor() is not None})
             return
         self._send(404, b"Not found")
 
@@ -138,9 +169,9 @@ class Handler(BaseHTTPRequestHandler):
             self._json(413, {"error": "File exceeds the 80 MB size limit."})
             return
         filename = parse_qs(urlsplit(self.path).query).get("name", ["document.pdf"])[0]
-        extractor = shutil.which("pdftotext")
+        extractor = _find_extractor()
         if not extractor:
-            self._json(503, {"error": "The Poppler text extractor (pdftotext) is missing. Install Poppler with your system's package manager, then restart Shadow Reader. Running ./run.sh offers the right command for your system."})
+            self._json(503, {"error": _missing_extractor_message()})
             return
         tmp_name = None
         try:
@@ -200,11 +231,14 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
-    if not shutil.which("pdftotext"):
+    if not _find_extractor():
         print("Poppler's pdftotext command is missing; PDF import is disabled for this run.")
-        print("Plain-text (.txt) files still work. Install PDF support with:")
-        print("Install Poppler with your package manager (the package is called poppler-utils, poppler-tools or poppler, depending on your distribution),")
-        print("or stop this and run ./run.sh, which offers the right command for your system.")
+        print("Plain-text (.txt) files still work.")
+        if os.name == "nt":
+            print("PDF support needs the poppler folder that comes with Shadow Reader. Download it again and keep that folder next to server.py.")
+        else:
+            print("Install Poppler with your package manager (the package is called poppler-utils, poppler-tools or poppler, depending on your distribution),")
+            print("or stop this and run ./run.sh, which offers the right command for your system.")
     server = ThreadingHTTPServer((HOST, PORT), Handler)
     url = f"http://{HOST}:{PORT}/"
     print("\nShadow Reader is running locally.")

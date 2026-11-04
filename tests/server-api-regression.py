@@ -15,6 +15,10 @@ from http.server import ThreadingHTTPServer
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import server  # noqa: E402
 
+# Windows cannot run a shebang script found on PATH, so there (and when this variable is set) the test
+# hands the server a command list [python, fake_script] instead of relying on a fake "pdftotext" on PATH.
+DIRECT_EXTRACTOR = sys.platform == "win32" or bool(os.environ.get("SHADOW_READER_TEST_DIRECT_EXTRACTOR"))
+
 
 FAKE_EXTRACTOR = r'''#!/usr/bin/env python3
 import os
@@ -56,9 +60,6 @@ def request(port: int, method: str, path: str, body: bytes | None = None,
 
 
 def main() -> int:
-    if sys.platform == "win32":
-        print("SKIP: this test builds a Unix-style fake pdftotext; the Windows version comes with the Windows launcher work.")
-        return 0
     passed: list[str] = []
     failures: list[str] = []
     original_path = os.environ.get("PATH", "")
@@ -71,6 +72,11 @@ def main() -> int:
         extractor = extractor_dir / "pdftotext"
         extractor.write_text(FAKE_EXTRACTOR, encoding="utf-8")
         extractor.chmod(0o755)
+        direct_script = extractor_dir / "fake_pdftotext.py"
+        direct_script.write_text(FAKE_EXTRACTOR, encoding="utf-8")
+        original_find_extractor = server._find_extractor
+        if DIRECT_EXTRACTOR:
+            server._find_extractor = lambda: [sys.executable, str(direct_script)]
         os.environ["PATH"] = str(extractor_dir) + os.pathsep + original_path
         os.environ["SHADOW_READER_TEST_EXTRACTOR_MODE"] = "ok"
         server.EXTRACTION_POLL_INTERVAL_SECONDS = 0.01
@@ -183,6 +189,9 @@ def main() -> int:
             original_port = server.PORT
             original_browser_open = server.webbrowser.open
             server.shutil.which = lambda _command: None
+            extractor_before_missing = server._find_extractor
+            if DIRECT_EXTRACTOR:
+                server._find_extractor = lambda: None
             try:
                 status, no_poppler_health = request(port, "GET", "/api/health")
                 status_pdf, no_poppler_error = request(port, "POST", "/api/extract", b"%PDF-fixture")
@@ -229,6 +238,7 @@ def main() -> int:
                     failures.append(f"server main failed to start without Poppler: {startup_errors!r}")
             finally:
                 server.shutil.which = original_which
+                server._find_extractor = extractor_before_missing
                 server.ThreadingHTTPServer = original_http_server
                 server.PORT = original_port
                 server.webbrowser.open = original_browser_open
@@ -240,6 +250,7 @@ def main() -> int:
             server.EXTRACTION_TIMEOUT_SECONDS = original_timeout
             server.EXTRACTION_POLL_INTERVAL_SECONDS = original_poll
             server.UPLOAD_READ_TIMEOUT_SECONDS = original_upload_timeout
+            server._find_extractor = original_find_extractor
             os.environ["PATH"] = original_path
             os.environ.pop("SHADOW_READER_TEST_EXTRACTOR_MODE", None)
 

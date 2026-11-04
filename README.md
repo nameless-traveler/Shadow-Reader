@@ -296,6 +296,7 @@ python3 tests/server-api-regression.py
 python3 tests/release-branding-regression.py
 python3 tests/logo-route-regression.py
 python3 tests/host-check-regression.py
+python3 tests/extractor-lookup-regression.py
 python3 tests/run-sh-regression.py
 ```
 
