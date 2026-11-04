@@ -1,0 +1,14 @@
+# Keep line endings stable on every OS.
+# Text files are LF in the working tree everywhere (so tests and shell scripts behave the same on Windows).
+* text=auto eol=lf
+
+# Windows launchers must be CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Never touch binaries.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.zip binary

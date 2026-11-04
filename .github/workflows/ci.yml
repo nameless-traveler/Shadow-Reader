@@ -131,3 +131,67 @@ jobs:
         env:
           IMAGE: ${{ matrix.image }}
         run: docker run --rm -v "$PWD":/src:ro "$IMAGE" sh /src/tests/distro-smoke.sh /src
+
+  windows-tests:
+    name: Windows tests (informational)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    # Informational for now: this job shows what still needs work on Windows without blocking releases.
+    # Remove the next line once it is green.
+    continue-on-error: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Install Poppler (Windows build)
+        run: |
+          choco install poppler -y --no-progress
+          Get-Command pdftotext
+
+      # Every step below runs even if an earlier one failed, so one run lists everything that breaks.
+      - name: Parser regression tests
+        if: ${{ !cancelled() }}
+        run: node tests/parser-regression.cjs
+
+      - name: Reading progress tests
+        if: ${{ !cancelled() }}
+        run: node tests/resume-feature-regression.cjs
+
+      - name: Focus Here tests
+        if: ${{ !cancelled() }}
+        run: node tests/focus-here-feature-regression.cjs
+
+      - name: Server API tests (skipped on Windows for now)
+        if: ${{ !cancelled() }}
+        run: python tests/server-api-regression.py
+
+      - name: Real PDF extraction (real Poppler)
+        if: ${{ !cancelled() }}
+        run: python tests/real-pdf-extraction.py
+
+      - name: Release branding tests
+        if: ${{ !cancelled() }}
+        run: python tests/release-branding-regression.py
+
+      - name: Logo route tests
+        if: ${{ !cancelled() }}
+        run: python tests/logo-route-regression.py
+
+      - name: Host and origin tests
+        if: ${{ !cancelled() }}
+        run: python tests/host-check-regression.py
+
+      - name: Launcher tests (skipped on Windows)
+        if: ${{ !cancelled() }}
+        run: python tests/run-sh-regression.py

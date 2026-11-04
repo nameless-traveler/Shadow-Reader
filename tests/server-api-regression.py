@@ -56,6 +56,9 @@ def request(port: int, method: str, path: str, body: bytes | None = None,
 
 
 def main() -> int:
+    if sys.platform == "win32":
+        print("SKIP: this test builds a Unix-style fake pdftotext; the Windows version comes with the Windows launcher work.")
+        return 0
     passed: list[str] = []
     failures: list[str] = []
     original_path = os.environ.get("PATH", "")

@@ -10,13 +10,17 @@ Runs under every POSIX shell found on the machine (dash, bash, busybox ash).
 from __future__ import annotations
 
 import os
-import pty
 import select
 import shutil
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
+
+try:
+    import pty
+except ImportError:  # Windows has no pty module; run.sh is a Linux launcher
+    pty = None
 
 ROOT = Path(__file__).resolve().parents[1]
 RUN_SH = ROOT / "run.sh"
@@ -159,6 +163,9 @@ def run_tty(shell: list[str], box: Sandbox, answer: str) -> tuple[int, str]:
 
 
 def main() -> int:
+    if pty is None:
+        print("SKIP: run.sh is the Linux launcher and needs a POSIX terminal (pty), which Windows does not have.")
+        return 0
     shells = find_shells()
     if not shells:
         print("FAIL: no POSIX shell found to test run.sh with")
