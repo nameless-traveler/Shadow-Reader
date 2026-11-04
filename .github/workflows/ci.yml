@@ -133,12 +133,10 @@ jobs:
         run: docker run --rm -v "$PWD":/src:ro "$IMAGE" sh /src/tests/distro-smoke.sh /src
 
   windows-tests:
-    name: Windows tests (informational)
+    name: Windows tests 
     runs-on: windows-latest
     timeout-minutes: 15
-    # Informational for now: this job shows what still needs work on Windows without blocking releases.
-    # Remove the next line once it is green.
-    continue-on-error: true
+
 
     steps:
       - name: Checkout repository
