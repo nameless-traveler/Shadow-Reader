@@ -35,7 +35,7 @@ jobs:
         run: python windows/smoke_test_zip.py dist/Shadow-Reader-windows.zip
 
       - name: Keep the ZIP
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Shadow-Reader-windows
           path: dist/Shadow-Reader-windows.zip
