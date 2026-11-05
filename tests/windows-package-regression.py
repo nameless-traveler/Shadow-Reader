@@ -7,6 +7,7 @@ finished zip happen in the "Build Windows ZIP" workflow (windows/build_windows_z
 from __future__ import annotations
 
 import importlib.util
+import re
 import tempfile
 import zipfile
 from pathlib import Path
@@ -126,6 +127,13 @@ def main() -> int:
             results.append(("a wrong SHA-256 stops the build", True))
         bw.verify_sha256(poppler, bw.sha256_of(poppler), "test file")
         results.append(("the right SHA-256 is accepted", True))
+
+    # The Python version the release workflow builds with must have a pinned SHA-256.
+    workflow = (ROOT / ".github" / "workflows" / "windows-zip.yml").read_text(encoding="utf-8")
+    match = re.search(r'python-version:\s*"?(\d+\.\d+\.\d+)"?', workflow)
+    results.append(("windows-zip.yml builds with an exact Python version", match is not None))
+    results.append(("that Python version has a pinned SHA-256 in the build script",
+                    bool(match) and re.fullmatch(r"[0-9a-f]{64}", bw.PYTHON_EMBED_SHA256.get(match.group(1), "")) is not None))
 
     version = bw.app_version()
     results.append(("version is read from server.py", version.count(".") == 2 and version.replace(".", "").isdigit()))

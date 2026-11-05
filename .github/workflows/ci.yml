@@ -74,6 +74,9 @@ jobs:
 
       - name: Run host/origin check tests
         run: python3 tests/host-check-regression.py
+
+      - name: Run port conflict and shutdown tests
+        run: python3 tests/port-conflict-regression.py
  
   browser-tests:
     name: Browser smoke tests
@@ -203,6 +206,10 @@ jobs:
       - name: Host and origin tests
         if: ${{ !cancelled() }}
         run: python tests/host-check-regression.py
+
+      - name: Port conflict tests
+        if: ${{ !cancelled() }}
+        run: python tests/port-conflict-regression.py
 
       - name: Launcher tests (skipped on Windows)
         if: ${{ !cancelled() }}

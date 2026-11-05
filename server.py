@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import socket
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -230,6 +232,27 @@ class Handler(BaseHTTPRequestHandler):
                     pass
 
 
+def _port_in_use() -> bool:
+    """True when something is already listening on our port. On Windows a second program may bind a
+    port that is in use, so asking "does anything answer there?" is more reliable than trying to bind."""
+    try:
+        with socket.create_connection((HOST, PORT), timeout=0.5):
+            return True
+    except OSError:
+        return False
+
+
+def _exit_port_in_use() -> None:
+    print(f"Port {PORT} is already in use. Shadow Reader may already be running (look for another Shadow Reader window),")
+    print("or another program is using that port. To use a different port, set SHADOW_READER_PORT, for example:")
+    if os.name == "nt":
+        print("  set SHADOW_READER_PORT=8766")
+        print("  Shadow-Reader.bat")
+    else:
+        print("  SHADOW_READER_PORT=8766 ./run.sh")
+    sys.exit(1)
+
+
 def main() -> None:
     if not _find_extractor():
         print("Poppler's pdftotext command is missing; PDF import is disabled for this run.")
@@ -239,7 +262,12 @@ def main() -> None:
         else:
             print("Install Poppler with your package manager (the package is called poppler-utils, poppler-tools or poppler, depending on your distribution),")
             print("or stop this and run ./run.sh, which offers the right command for your system.")
-    server = ThreadingHTTPServer((HOST, PORT), Handler)
+    if _port_in_use():
+        _exit_port_in_use()
+    try:
+        server = ThreadingHTTPServer((HOST, PORT), Handler)
+    except OSError:
+        _exit_port_in_use()
     url = f"http://{HOST}:{PORT}/"
     print("\nShadow Reader is running locally.")
     print(f"Open: {url}")

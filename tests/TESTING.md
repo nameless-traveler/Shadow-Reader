@@ -13,6 +13,7 @@ python3 tests/logo-route-regression.py
 python3 tests/host-check-regression.py
 python3 tests/extractor-lookup-regression.py
 python3 tests/windows-package-regression.py
+python3 tests/port-conflict-regression.py   # busy port gives a clear message; Ctrl+C stops cleanly
 python3 tests/run-sh-regression.py       # launcher; needs dash or bash (busybox optional)
 python3 tests/performance-browser-smoke.py
 python3 tests/virtualization-browser-smoke.py

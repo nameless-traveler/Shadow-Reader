@@ -43,8 +43,12 @@ POPPLER_BINARY_ORIGIN = "https://github.com/oschwartz10612/poppler-windows"
 POPPLER_RECIPE_URL = "https://github.com/conda-forge/poppler-feedstock"
 
 # --- Python: the embeddable package of the same version as the interpreter running this script -------
-# If you pin a hash here, the download is verified. Left empty, the hash is printed so you can pin it.
-PYTHON_EMBED_SHA256: Dict[str, str] = {}
+# The download is checked against the hash pinned here. For a new Python version the hash is printed
+# during the build ("is not pinned. SHA-256 = ..."); compare it with python.org, then add it below.
+# The version in windows-zip.yml must be one of these (tests/windows-package-regression.py checks that).
+PYTHON_EMBED_SHA256: Dict[str, str] = {
+    "3.13.17": "9e35319bffedab8b36ad44d8f377cb4f1733bcec257a0b6d04d94f01486ddb38",
+}
 
 ZIP_ROOT = "shadow-reader"
 FIXED_ZIP_TIME = (2026, 1, 1, 0, 0, 0)  # same input -> byte-identical zip

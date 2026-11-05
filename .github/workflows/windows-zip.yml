@@ -12,9 +12,14 @@ permissions:
 
 jobs:
   build:
-    name: Build and test the Windows ZIP
-    runs-on: windows-latest
+    name: Build and test the Windows ZIP (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # windows-latest is Windows Server 2025; windows-2022 is the closest to Windows 10/11 21H2.
+        os: [windows-latest, windows-2022]
 
     steps:
       - name: Checkout repository
@@ -23,7 +28,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.13"
+          python-version: "3.13.17"
 
       - name: Install the build helper
         run: python -m pip install pefile
@@ -35,6 +40,7 @@ jobs:
         run: python windows/smoke_test_zip.py dist/Shadow-Reader-windows.zip
 
       - name: Keep the ZIP
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v7
         with:
           name: Shadow-Reader-windows
