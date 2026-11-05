@@ -137,7 +137,7 @@ Keep the terminal open while you read. To stop the local server, return to that 
 4. If Windows says "Windows protected your PC", choose **More info**, then **Run anyway**. The download is not code-signed. Shadow Reader only listens on your own computer (`127.0.0.1`).
 5. A black window opens and your browser opens the reader. If it does not, open **http://127.0.0.1:8765/**. Keep the black window open while you read; close it, or press **Ctrl+C**, to stop.
 
-Python (the official embeddable package from python.org) and Poppler's `pdftotext` are included. Poppler is free software under the GNU GPL; the ZIP's `THIRD-PARTY-NOTICES.txt` lists its licence and where to get its source code. If port 8765 is busy, open a Command Prompt in the folder and run `set SHADOW_READER_PORT=8766`, then `Shadow-Reader.bat`. To check your download, compare its SHA-256 with the one in the release notes: `certutil -hashfile Shadow-Reader-2.1.0-windows.zip SHA256`.
+Python (the official embeddable package from python.org) and Poppler's `pdftotext` are included. Poppler is free software under the GNU GPL; the ZIP's `THIRD-PARTY-NOTICES.txt` lists its licence and where to get its source code. If port 8765 is busy, open a Command Prompt in the folder and run `set SHADOW_READER_PORT=8766`, then `Shadow-Reader.bat`. To check your download, compare its SHA-256 with the one on the release page: `certutil -hashfile Shadow-Reader-2.1.0-windows.zip SHA256`.
 
 ### Option B — Run from a Git clone
 
@@ -311,6 +311,7 @@ python3 tests/logo-route-regression.py
 python3 tests/host-check-regression.py
 python3 tests/extractor-lookup-regression.py
 python3 tests/windows-package-regression.py
+python3 tests/linux-package-regression.py
 python3 tests/port-conflict-regression.py
 python3 tests/run-sh-regression.py
 ```
@@ -411,7 +412,7 @@ Shadow-Reader/
 ├── benchmarks/                          data, charts, PERFORMANCE_BENCHMARK.pdf
 ├── docs/                                reports and screenshots
 ├── tests/                               regression and browser tests
-├── windows/                             Windows launcher, ZIP build script and smoke test
+├── linux/ · windows/                    builds the two download ZIPs (windows/ also holds the launcher)
 ├── .github/workflows/                   ci.yml, windows-zip.yml
 └── LICENSE · README.md · RELEASE_NOTES.md
 ```

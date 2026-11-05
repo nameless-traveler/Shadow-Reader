@@ -57,6 +57,9 @@ jobs:
       - name: Run Windows packaging tests
         run: python3 tests/windows-package-regression.py
 
+      - name: Run Linux packaging tests
+        run: python3 tests/linux-package-regression.py
+
       - name: Run release branding tests
         run: python3 tests/release-branding-regression.py
 
