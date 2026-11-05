@@ -99,3 +99,31 @@ jobs:
       - name: Touchpad scroll regression
         run: python3 tests/touchpad-scroll-behavior.py
  
+
+  distro-tests:
+    name: Real install on ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Debian 13
+            image: debian:13
+          - name: Fedora
+            image: fedora:latest
+          - name: Arch Linux
+            image: archlinux:latest
+          - name: Alpine
+            image: alpine:latest
+          - name: openSUSE Tumbleweed
+            image: opensuse/tumbleweed:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Run launcher in a fresh container (installs Python and Poppler for real)
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: docker run --rm -v "$PWD":/src:ro "$IMAGE" sh /src/tests/distro-smoke.sh /src
