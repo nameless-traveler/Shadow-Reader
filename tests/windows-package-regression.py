@@ -74,7 +74,8 @@ def main() -> int:
         out2 = temp_dir / "two.zip"
         dlls = bw.build(poppler, python, out1, "3.13.9", fake_imports_of)
         bw.build(poppler, python, out2, "3.13.9", fake_imports_of)
-        names = set(zipfile.ZipFile(out1).namelist())
+        with zipfile.ZipFile(out1) as opened:
+            names = set(opened.namelist())
         p = bw.ZIP_ROOT + "/"
 
         results.append(("build bundles exactly the DLLs pdftotext needs", dlls == closure))
@@ -92,9 +93,9 @@ def main() -> int:
         results.append(("zip has no tests, build scripts, git files or caches",
                         not any(("/tests/" in n or "/windows/" in n or ".git" in n or "__pycache__" in n or n.endswith(".pyc")) for n in names)))
 
-        archive = zipfile.ZipFile(out1)
-        bat = archive.read(p + "Shadow-Reader.bat")
-        notice = archive.read(p + "THIRD-PARTY-NOTICES.txt").decode("utf-8")
+        with zipfile.ZipFile(out1) as archive:
+            bat = archive.read(p + "Shadow-Reader.bat")
+            notice = archive.read(p + "THIRD-PARTY-NOTICES.txt").decode("utf-8")
         results.append(("launcher uses Windows (CRLF) line endings", b"\r\n" in bat and b"\n" not in bat.replace(b"\r\n", b"")))
         results.append(("notices name Poppler's licence, its source and every bundled library",
                         "GNU General Public License" in notice and bw.POPPLER_SOURCE_URL in notice

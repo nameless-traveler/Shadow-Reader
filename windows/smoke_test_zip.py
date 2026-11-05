@@ -56,7 +56,7 @@ def main() -> int:
 
     zip_path = Path(sys.argv[1]).resolve()
     results: list[tuple[str, bool]] = []
-    with tempfile.TemporaryDirectory(prefix="shadow-reader-smoke-") as temp:
+    with tempfile.TemporaryDirectory(prefix="shadow-reader-smoke-", ignore_cleanup_errors=True) as temp:
         with zipfile.ZipFile(zip_path) as archive:
             archive.extractall(temp)
         app = Path(temp) / "shadow-reader"
