@@ -1,5 +1,12 @@
 # Shadow Reader — release notes
 
+## 2.1.0 — 5 November 2026
+
+- **Windows download (experimental).** `Shadow-Reader-2.1.0-windows.zip` runs without installing anything: extract all, then double-click `Shadow-Reader.bat`. It bundles Python 3.13.17 and Poppler 26.09.0 (GPL; licence and source link are in `THIRD-PARTY-NOTICES.txt`). The Windows ZIP is built and run for real on Windows Server 2022 and 2025 in CI, including PDF extraction, a 300-page PDF, a busy-port check and a stop-and-restart check. It has **not yet been tried on a Windows 10 or 11 desktop** and is not code-signed, so Windows may show a SmartScreen warning.
+- **Clear message when the port is busy.** Starting a second copy, or starting while another program uses the port, now stops with a short explanation and the `SHADOW_READER_PORT` setting instead of a long error.
+- **Tests.** CI now runs the shared tests on Windows, and adds port-conflict and shutdown tests. Python 3.10 is the minimum supported version.
+- The Linux download is unchanged apart from the port message above.
+
 ## 2.0.2 — 3 November 2026
 
 - **Tab icon.** The browser tab now shows the Shadow Reader icon.

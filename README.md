@@ -4,7 +4,9 @@
   <p><strong><em>An invaluable companion on your reading journey.</em></strong></p>
   <p>A calm, private reader for long novels and text-based PDFs.<br>
   Find your chapters, settle into the story, and pick up where you left off.</p>
-  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-2.0.2.zip"><strong>↓ Download Shadow Reader for Linux</strong></a></p>
+  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-2.1.0.zip"><strong>↓ Download Shadow Reader for Linux</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-2.1.0-windows.zip"><strong>↓ Download for Windows (experimental)</strong></a></p>
   <p><a href="#install-and-run">Get started</a> · <a href="#features">Features</a> · <a href="benchmarks/PERFORMANCE_BENCHMARK.pdf">Performance</a> · <a href="tests/TESTING.md">Testing</a> · <a href="RELEASE_NOTES.md">Release notes</a></p>
 </div>
 
@@ -82,6 +84,7 @@ Focus mode presents the detected chapter with dedicated navigation controls. Mov
 
 - **Developed and tested on:** Debian GNU/Linux 13 (Trixie).
 - **Other Linux distributions:** every push to `main` runs `run.sh` in a fresh container of Debian 13, Fedora, Arch Linux, Alpine and openSUSE Tumbleweed. It installs Python and Poppler with that distribution's package manager, starts the server and extracts a real PDF. Ubuntu, Linux Mint and other relatives of these should behave the same. The launcher also knows `yum`, `xbps` (Void) and `emerge` (Gentoo), but those are not run in CI. See [Poppler package names](#poppler-package-names-by-distribution).
+- **Windows (experimental):** a separate ZIP bundles Python and Poppler, so nothing needs to be installed. Its build and a real PDF extraction are tested automatically on Windows Server 2022 and 2025. It has **not yet been tried on a Windows 10 or 11 desktop**, and it is not code-signed, so Windows may show a SmartScreen warning. See [Windows](#windows-experimental).
 - **Test status:** the application has been used on Debian 13 Trixie with Firefox. Automated browser tests and performance measurements were run in a separate Debian 13 test container with headless Chromium; see [Test environment](#test-environment) for the exact details.
 - **Recommended browser:** Firefox. A modern desktop browser is needed to use the reader.
 
@@ -125,6 +128,16 @@ It does **not** install Node.js, Firefox, or Chromium. Installing packages requi
 7. Click **Open a PDF** and choose a book. You can also open a plain `.txt` file.
 
 Keep the terminal open while you read. To stop the local server, return to that terminal and press **Ctrl+C**.
+
+### Windows (experimental)
+
+1. Download the Windows ZIP using the link near the top of this page.
+2. Right-click the ZIP and choose **Extract All**. Do not run it from inside the ZIP.
+3. Open the extracted `shadow-reader` folder and double-click **`Shadow-Reader.bat`**.
+4. If Windows says "Windows protected your PC", choose **More info**, then **Run anyway**. The download is not code-signed. Shadow Reader only listens on your own computer (`127.0.0.1`).
+5. A black window opens and your browser opens the reader. If it does not, open **http://127.0.0.1:8765/**. Keep the black window open while you read; close it, or press **Ctrl+C**, to stop.
+
+Python (the official embeddable package from python.org) and Poppler's `pdftotext` are included. Poppler is free software under the GNU GPL; the ZIP's `THIRD-PARTY-NOTICES.txt` lists its licence and where to get its source code. If port 8765 is busy, open a Command Prompt in the folder and run `set SHADOW_READER_PORT=8766`, then `Shadow-Reader.bat`. To check your download, compare its SHA-256 with the one in the release notes: `certutil -hashfile Shadow-Reader-2.1.0-windows.zip SHA256`.
 
 ### Option B — Run from a Git clone
 
@@ -267,7 +280,7 @@ Keep the application runtime requirements separate from the optional test tools:
 - **Application target tested:** Debian GNU/Linux 13 (Trixie), using Firefox during manual use.
 - **Launcher (`run.sh`) tests:** two layers. Fast checks run under dash, bash and busybox ash with fake package managers for all eight supported package managers (which package is requested, with and without `sudo`/`doas`/root and a terminal). Real-install checks (`tests/distro-smoke.sh`) run in CI inside fresh Debian 13, Fedora, Arch, Alpine and openSUSE containers.
 - **Automated UI tests:** Debian 13 container, headless Chromium, Python Playwright. These confirm application interactions but are not equivalent to native Firefox/touchpad tests.
-- **GitHub Actions CI:** four jobs run on every push to `main` and every pull request, on GitHub-hosted Ubuntu runners. *Regression Tests* (Node.js 22,Python 3.10, 3.13, 3.14 and 3.15, Poppler installed) runs the parser, progress, Focus Here, server API, real-PDF extraction, branding, logo, host/origin and launcher checks. *Browser smoke tests* (headless Chromium via Playwright) runs the performance, virtualization, Focus Here, Continue Reading and touchpad-scroll tests. A third job, *Real install*, runs the launcher in fresh distribution containers as described above.A fourth job, *Windows tests*, runs the shared tests on Windows, with the two Unix-only ones skipped; Windows is not a supported platform yet. CI does not replace testing on the supported Debian 13 target with Firefox.
+- **GitHub Actions CI:** four jobs run on every push to `main` and every pull request, on GitHub-hosted Ubuntu runners. *Regression Tests* (Node.js 22,Python 3.10, 3.13, 3.14 and 3.15, Poppler installed) runs the parser, progress, Focus Here, server API, real-PDF extraction, branding, logo, host/origin and launcher checks. *Browser smoke tests* (headless Chromium via Playwright) runs the performance, virtualization, Focus Here, Continue Reading and touchpad-scroll tests. A third job, *Real install*, runs the launcher in fresh distribution containers as described above. A fourth job, *Windows tests*, runs the shared tests on Windows (the Linux-only launcher test skips itself). A separate workflow, *Build Windows ZIP*, builds the Windows download and then runs it on Windows Server 2022 and 2025: it starts the bundled launcher, loads the page and logo, extracts a real PDF and a 300-page PDF with the bundled Poppler, refuses a second copy on a busy port, and checks that stopping and starting again works. CI does not replace testing on the supported Debian 13 target with Firefox, nor on a real Windows desktop.
 - **Benchmark measurements:** the container environment detailed above (AMD EPYC virtual CPU, 5 vCPUs, 5.8 GiB visible RAM, Chromium 144, 1366 × 768 viewport).
 - **Full-novel parser corpus:** *Alice's Adventures in Wonderland* (12 chapters), Shadow Slave Volume 6 (170 chapters), and Shadow Slave Volume 7 (354 chapters). These PDFs are test inputs and are **not included** in the source/release archive. The standard generated tests run without them; exact whole-document checks require you to supply locally owned copies and extract their text.
 
@@ -298,6 +311,7 @@ python3 tests/logo-route-regression.py
 python3 tests/host-check-regression.py
 python3 tests/extractor-lookup-regression.py
 python3 tests/windows-package-regression.py
+python3 tests/port-conflict-regression.py
 python3 tests/run-sh-regression.py
 ```
 
@@ -381,7 +395,7 @@ For exact test coverage, known limitations, and additional full-text test comman
 |---|---|
 | The browser did not open automatically | Open `http://127.0.0.1:8765/` manually while `run.sh` is still running. |
 | PDF import says Poppler is missing | Install Poppler with your package manager (see [Poppler package names](#poppler-package-names-by-distribution)), then restart `./run.sh`. |
-| The page says the port is already in use | Start with `SHADOW_READER_PORT=8766 ./run.sh` and open `http://127.0.0.1:8766/`. |
+| The page says the port is already in use | Shadow Reader may already be running in another window. Otherwise start with `SHADOW_READER_PORT=8766 ./run.sh` (on Windows: `set SHADOW_READER_PORT=8766`, then `Shadow-Reader.bat`) and open `http://127.0.0.1:8766/`. |
 | Saved progress seems missing | Use the exact same URL/origin and browser profile used previously. Check whether site data was cleared. |
 | The chapter list is incomplete or has false positives | Check the PDF's text layer and heading format. Normal mode remains available even if chapter detection is imperfect. |
 | The PDF opens but words or paragraphs are merged strangely | Shadow Reader relies on the PDF's text layout. Scanned pages, multi-column documents, missing indentation, and unusual line breaks may need OCR or preprocessing. |
@@ -397,7 +411,8 @@ Shadow-Reader/
 ├── benchmarks/                          data, charts, PERFORMANCE_BENCHMARK.pdf
 ├── docs/                                reports and screenshots
 ├── tests/                               regression and browser tests
-├── .github/workflows/ci.yml
+├── windows/                             Windows launcher, ZIP build script and smoke test
+├── .github/workflows/                   ci.yml, windows-zip.yml
 └── LICENSE · README.md · RELEASE_NOTES.md
 ```
 
