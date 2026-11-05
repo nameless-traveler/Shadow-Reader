@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Builds the Linux download from this repository.
 
-    python3 linux/build_linux_zip.py                  # writes dist/Shadow-Reader-<version>.zip
+    python3 linux/build_linux_zip.py                  # writes dist/Shadow-Reader-<version>-linux.zip
     python3 linux/build_linux_zip.py --out some.zip
 
 The zip holds only what is needed to read: the app, the launcher, the logo, a short README
@@ -70,7 +70,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
-    out = args.out or ROOT / "dist" / f"Shadow-Reader-{app_version()}.zip"
+    out = args.out or ROOT / "dist" / f"Shadow-Reader-{app_version()}-linux.zip"
     digest = build(out)
     print(f"Wrote {out}")
     print(f"SHA-256: {digest}")

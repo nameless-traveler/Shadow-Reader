@@ -4,7 +4,7 @@
   <p><strong><em>An invaluable companion on your reading journey.</em></strong></p>
   <p>A calm, private reader for long novels and text-based PDFs.<br>
   Find your chapters, settle into the story, and pick up where you left off.</p>
-  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-2.1.0.zip"><strong>↓ Download Shadow Reader for Linux</strong></a>
+  <p><a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-2.1.0-linux.zip"><strong>↓ Download Shadow Reader for Linux</strong></a>
   &nbsp;·&nbsp;
   <a href="https://github.com/nameless-traveler/Shadow-Reader/releases/latest/download/Shadow-Reader-2.1.0-windows.zip"><strong>↓ Download for Windows (experimental)</strong></a></p>
   <p><a href="#install-and-run">Get started</a> · <a href="#features">Features</a> · <a href="benchmarks/PERFORMANCE_BENCHMARK.pdf">Performance</a> · <a href="tests/TESTING.md">Testing</a> · <a href="RELEASE_NOTES.md">Release notes</a></p>
@@ -137,7 +137,7 @@ Keep the terminal open while you read. To stop the local server, return to that 
 4. If Windows says "Windows protected your PC", choose **More info**, then **Run anyway**. The download is not code-signed. Shadow Reader only listens on your own computer (`127.0.0.1`).
 5. A black window opens and your browser opens the reader. If it does not, open **http://127.0.0.1:8765/**. Keep the black window open while you read; close it, or press **Ctrl+C**, to stop.
 
-Python (the official embeddable package from python.org) and Poppler's `pdftotext` are included. Poppler is free software under the GNU GPL; the ZIP's `THIRD-PARTY-NOTICES.txt` lists its licence and where to get its source code. If port 8765 is busy, open a Command Prompt in the folder and run `set SHADOW_READER_PORT=8766`, then `Shadow-Reader.bat`. To check your download, compare its SHA-256 with the one on the release page: `certutil -hashfile Shadow-Reader-2.1.0-windows.zip SHA256`.
+Python (the official embeddable package from python.org) and Poppler's `pdftotext` are included. Poppler is free software under the GNU GPL; the ZIP's `THIRD-PARTY-NOTICES.txt` lists its licence and where to get its source code. The corresponding Poppler source archive, `poppler-26.09.0.tar.xz`, is available from the [official Poppler releases page](https://poppler.freedesktop.org/releases/). If port 8765 is busy, open a Command Prompt in the folder and run `set SHADOW_READER_PORT=8766`, then `Shadow-Reader.bat`. To check your download, compare its SHA-256 with the one on the release page: `certutil -hashfile Shadow-Reader-2.1.0-windows.zip SHA256`.
 
 ### Option B — Run from a Git clone
 

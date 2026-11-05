@@ -6,6 +6,14 @@
 - **Clear message when the port is busy.** Starting a second copy, or starting while another program uses the port, now stops with a short explanation and the `SHADOW_READER_PORT` setting instead of a long error.
 - **Tests.** CI now runs the shared tests on Windows, and adds port-conflict and shutdown tests. Python 3.10 is the minimum supported version.
 - The Linux download is unchanged apart from the port message above.
+- **Poppler source code.** The Windows download includes Poppler 26.09.0 (GNU GPL). The corresponding source archive, `poppler-26.09.0.tar.xz`, is available from the [official Poppler releases page](https://poppler.freedesktop.org/releases/).
+
+**Downloads and SHA-256 checksums**
+
+| File | SHA-256 |
+|---|---|
+| `Shadow-Reader-2.1.0-linux.zip` | `03e347fbcbd503687b2041450eee6d2572f8324193337b025eefb3ff2d0f8755` |
+| `Shadow-Reader-2.1.0-windows.zip` | `2a3cda774ff05d6bef4348b96d5398d66e9941a7dabd44c743eae3b098184342` |
 
 ## 2.0.2 — 3 November 2026
 
